@@ -1,5 +1,6 @@
 from enum import Enum
 from random import randint
+from time import sleep
 
 class Move(Enum):
     ROCK = 0
@@ -103,18 +104,30 @@ class Judge:
         else:
             return Outcome.WON, p2, p1
 
+        #TODO: this is only in favour of player1
     def determine_win_fallout(self,player,p1move,p2move):
         player.gain_move(p2move)
         player.gain_points(1)
-
+        #TODO: this is only in favour of player1
     def determine_loss_fallout(self,player,p1move,p2move):
         player.lose_move(p1move)
 
     def bribe(self,who):
         self.bribed = (True, who)
 
-    def get_random_choice(self):
-        return randint(0,2)
+    def get_random_choice(self,player):
+        done = False
+        
+        choice = -1
+        if not player.has_moves_left():
+            return choice
+        
+        while not done:
+            choice = randint(0,2)
+            if player.can_choose_move(choice):
+                done = True
+        
+        return choice
 
     def get_player_choice(self,player):
         done = False
@@ -128,7 +141,10 @@ class Judge:
                 done = True
                 
         return choice
-            
+
+def clear_screen():
+    print("\n" * 100)
+    
 def main(debug = False):
 
     judge = Judge()
@@ -143,9 +159,9 @@ def main(debug = False):
         print("Current stats:\n{}: {}\n{}: {}".format(player1.get_name(),player1.get_points(),player2.get_name(),player2.get_points()) )
         player1.show_moves()
         p1_choice = judge.get_player_choice(player1)
-        p2_choice = judge.get_random_choice()
+        p2_choice = judge.get_random_choice(player2)
 
-        if p1_choice < 0:
+        if p1_choice < 0 or p2_choice < 0:
             done = True
         else:
             outcome, winner, loser = judge.determine_match_outcome(player1, p1_choice, player2, p2_choice)
@@ -165,6 +181,8 @@ def main(debug = False):
             else:
                 print("IT WAS A DRAW!")
 
+            if not debug:
+                clear_screen()
 
     print("Final stats:\n{}: {}\n{}: {}".format(player1.get_name(),player1.get_points(),player2.get_name(),player2.get_points()) )
 
