@@ -2,6 +2,8 @@ from enum import Enum
 from random import randint
 from time import sleep
 
+debug = False
+
 class Move(Enum):
     ROCK = 0
     PAPER = 1
@@ -93,24 +95,31 @@ class Judge:
     
     def determine_match_outcome(self,p1,p1move,p2,p2move):
         if (p1move == p2move):
-            return Outcome.DRAW, None, None
+            return Outcome.DRAW, None, None, None, None
         
         if (p1move == Move.ROCK and p2move == Move.SCISSORS):
-            return Outcome.WON, p1, p2
+            return Outcome.WON, p1, p2, p1move, p2move
         elif (p1move == Move.PAPER and p2move == Move.ROCK ):
-            return Outcome.WON, p1, p2    
+            return Outcome.WON, p1, p2, p1move, p2move
         elif (p1move == Move.SCISSORS and p2move == Move.PAPER):
-            return Outcome.WON, p1, p2
+            return Outcome.WON, p1, p2, p1move, p2move
         else:
-            return Outcome.WON, p2, p1
+            return Outcome.WON, p2, p1, p2move, p1move
 
-        #TODO: this is only in favour of player1
-    def determine_win_fallout(self,player,p1move,p2move):
-        player.gain_move(p2move)
-        player.gain_points(1)
-        #TODO: this is only in favour of player1
-    def determine_loss_fallout(self,player,p1move,p2move):
-        player.lose_move(p1move)
+        
+    def determine_match_fallout(self,winner,loser,winner_move,loser_move):
+        winner.gain_move(loser_move)
+        loser.lose_move(loser_move)
+        
+        winner.gain_points(2)
+
+    def determine_draw_fallout(self,player1,player2,p1move,p2move):
+        player1.gain_points(1)
+        player2.gain_points(1)
+        pass
+        
+    def determine_loss_fallout(self,winner,loser,p1move,p2move):
+        loser.lose_move(p1move)
 
     def bribe(self,who):
         self.bribed = (True, who)
@@ -129,7 +138,39 @@ class Judge:
         
         return choice
 
-    def get_player_choice(self,player):
+
+class Statistics:
+    def __init__(self,p1,p2):
+        self.p1 = p1
+        self.p2 = p2
+        
+    def show():
+        if (self.p1).get_points() > (self.p2).get_points():
+            print("Current stats:\n{}: {}\n{}: {}".format((self.p1).get_name(),
+                                                          (self.p1).get_points(),
+                                                          (self.p2).get_name(),
+                                                          (self.p2).get_points()) )
+        else:
+            print("Current stats:\n{}: {}\n{}: {}".format((self.p2).get_name(),
+                                                          (self.p2).get_points(),
+                                                          (self.p1).get_name(),
+                                                          (self.p1).get_points()) )
+    def show_winner():
+        if (self.p1).get_points() > (self.p2).get_points():
+            print("Winner of this round: {} with {} points!".format((self.p1).get_name(),
+                                                                    (self.p1).get_points() ))
+        else:
+            print("Winner of this round: {} with {} points!".format((self.p2).get_name(),
+                                                                    (self.p2).get_points() ))
+
+#
+#
+#
+#
+#
+
+            
+def get_player_choice(player):
         done = False
         if not player.has_moves_left():
             return -1
@@ -137,6 +178,7 @@ class Judge:
         choice = -1
         while not done:
             choice = int(input('What is your move?: ')) - 1 # minus one since choices do not begin with 0
+            choice = choice % 3
             if player.can_choose_move(choice):
                 done = True
                 
@@ -144,27 +186,33 @@ class Judge:
 
 def clear_screen():
     print("\n" * 100)
-    
-def main(debug = False):
 
+def p(message):
+    if 
+    
+        
+def main(debug = False):
+    clear_screen()
+    
     judge = Judge()
     player2 = Player("Greger of Doom")
     done = False
 
     print("Welcome to rpsEXTREME")
     name = input("What is your name?: ")
-    player1 = Player(name) 
+    player1 = Player(name)
+
+    stats = Statistics(player1, player2)
     while not done:
         print("You are battling {}".format(player2.get_name()))
-        print("Current stats:\n{}: {}\n{}: {}".format(player1.get_name(),player1.get_points(),player2.get_name(),player2.get_points()) )
         player1.show_moves()
-        p1_choice = judge.get_player_choice(player1)
+        p1_choice = get_player_choice(player1)
         p2_choice = judge.get_random_choice(player2)
 
         if p1_choice < 0 or p2_choice < 0:
             done = True
         else:
-            outcome, winner, loser = judge.determine_match_outcome(player1, p1_choice, player2, p2_choice)
+            outcome, winner, loser, winner_move, loser_move = judge.determine_match_outcome(player1, p1_choice, player2, p2_choice)
             
             if debug:
                 print("\n*********DEBUG**********")
@@ -173,18 +221,20 @@ def main(debug = False):
                 else:
                     print('Outcome:',outcome,'\nwinner:',winner,'\nloser:',loser,'\np1_choice:', p1_choice,'\np2_choice:', p2_choice)
                     print("*********DEBUG**********\n")
-                
+            print("")
+            
             if (outcome != Outcome.DRAW):
                 print("The winner is: {}".format(winner.get_name()))
-                judge.determine_win_fallout(winner,p1_choice,p2_choice)
-                judge.determine_loss_fallout(loser,p1_choice,p2_choice)
+                judge.determine_match_fallout(winner,loser, winner_move, loser_move)
+                # judge.determine_loss_fallout(winner,loser,p1_choice,p2_choice)
             else:
                 print("IT WAS A DRAW!")
-
             if not debug:
+                sleep(1.5)
                 clear_screen()
 
     print("Final stats:\n{}: {}\n{}: {}".format(player1.get_name(),player1.get_points(),player2.get_name(),player2.get_points()) )
 
+    
 if __name__ == '__main__':
-    main(debug = True)
+    main(debug = False)
