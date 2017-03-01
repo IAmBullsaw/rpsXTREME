@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum 
 from random import randint
 from time import sleep
 
@@ -32,12 +32,16 @@ class Outcome(Enum):
 
 class Player:
     def __init__(self,name):
-        self.name = name
+        self.name = name + self.get_power_name()
         self.rocks = 1
         self.papers = 1
         self.scissors = 1
         self.points = 0
 
+    def get_power_name(self):
+        l = ["the Defiler","Crusher of Hands","of Man"]
+        return " " + l[randint(0, len(l)-1)]
+        
     def lose_move(self, move):
         if (move == Move.ROCK):
             self.rocks -= 1
@@ -105,7 +109,9 @@ class Judge:
             return Outcome.WON, p1, p2, p1move, p2move
         else:
             return Outcome.WON, p2, p1, p2move, p1move
-
+        
+    def on_start_of_turn(self,p1,p2):
+        p1.gain_move(Move.)
         
     def determine_match_fallout(self,winner,loser,winner_move,loser_move):
         winner.gain_move(loser_move)
@@ -138,13 +144,12 @@ class Judge:
         
         return choice
 
-
 class Statistics:
     def __init__(self,p1,p2):
         self.p1 = p1
         self.p2 = p2
         
-    def show():
+    def show(self):
         if (self.p1).get_points() > (self.p2).get_points():
             print("Current stats:\n{}: {}\n{}: {}".format((self.p1).get_name(),
                                                           (self.p1).get_points(),
@@ -155,7 +160,7 @@ class Statistics:
                                                           (self.p2).get_points(),
                                                           (self.p1).get_name(),
                                                           (self.p1).get_points()) )
-    def show_winner():
+    def show_winner(self):
         if (self.p1).get_points() > (self.p2).get_points():
             print("Winner of this round: {} with {} points!".format((self.p1).get_name(),
                                                                     (self.p1).get_points() ))
@@ -187,15 +192,14 @@ def get_player_choice(player):
 def clear_screen():
     print("\n" * 100)
 
-def p(message):
-    if 
-    
+def get_random_from_list(l):
+    return l[randint(0,len(l)-1)]
         
 def main(debug = False):
     clear_screen()
     
     judge = Judge()
-    player2 = Player("Greger of Doom")
+    player2 = Player(get_random_from_list(["Greger","Herman","Abraham", "Gunhilda", "Berit", "Handson"]))
     done = False
 
     print("Welcome to rpsEXTREME")
@@ -226,14 +230,15 @@ def main(debug = False):
             if (outcome != Outcome.DRAW):
                 print("The winner is: {}".format(winner.get_name()))
                 judge.determine_match_fallout(winner,loser, winner_move, loser_move)
-                # judge.determine_loss_fallout(winner,loser,p1_choice,p2_choice)
             else:
                 print("IT WAS A DRAW!")
+            stats.show()
             if not debug:
                 sleep(1.5)
                 clear_screen()
-
-    print("Final stats:\n{}: {}\n{}: {}".format(player1.get_name(),player1.get_points(),player2.get_name(),player2.get_points()) )
+    stats.show()
+    stats.show_winner()
+   # print("Final stats:\n{}: {}\n{}: {}".format(player1.get_name(),player1.get_points(),player2.get_name(),player2.get_points()) )
 
     
 if __name__ == '__main__':
