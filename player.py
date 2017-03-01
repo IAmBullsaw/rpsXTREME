@@ -2,12 +2,13 @@ from random import randint
 from enums import Move
 
 class Player:
-    def __init__(self,name):
+    def __init__(self, name, retarded = False):
         self.name = name + self.get_power_name()
-        self.rocks = 1
-        self.papers = 1
+        self.rocks = 1 if not retarded else 0
+        self.papers = 1 if not retarded else 0
         self.scissors = 1
         self.points = 0
+        self.wins = 0
 
     def get_power_name(self):
         l = ["the Defiler","the Crusher of Hands","of Doom","the Hand Magician"]
@@ -30,6 +31,9 @@ class Player:
             self.scissors += 1
         else:
             NotImplemented
+            
+    def won_match(self):
+        self.wins += 1
 
     def gain_points(self, points):
         self.points += points
@@ -39,9 +43,15 @@ class Player:
 
     def get_points(self):
         return self.points
+
+    def get_wins(self):
+        return self.wins
         
     def get_name(self):
-        return self.name;
+        return self.name
+
+    def is_retarded(self):
+        return self.retarded
 
     def has_moves_left(self):
         return (self.rocks > 0 or self.papers > 0 or self.scissors > 0)
