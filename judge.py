@@ -17,19 +17,23 @@ class Judge:
     
     def determine_match_outcome(self,p1,p1move,p2,p2move):
         if (p1move == p2move):
-            return Outcome.DRAW, None, None, None, None
+            return None, None, None, None
         
         if (p1move == Move.ROCK and p2move == Move.SCISSORS):
-            return Outcome.WON, p1, p2, p1move, p2move
+            return p1, p2, p1move, p2move
         elif (p1move == Move.PAPER and p2move == Move.ROCK ):
-            return Outcome.WON, p1, p2, p1move, p2move
+            return p1, p2, p1move, p2move
         elif (p1move == Move.SCISSORS and p2move == Move.PAPER):
-            return Outcome.WON, p1, p2, p1move, p2move
+            return p1, p2, p1move, p2move
         else:
-            return Outcome.WON, p2, p1, p2move, p1move
+            return p2, p1, p2move, p1move
         
     def on_start_of_turn(self,p1,p2):
         p1.gain_move([Move.PAPER,Move.ROCK,Move.SCISSORS][randint(0,2)])
+
+    def on_start_of_match(self,p1,p2):
+        pass
+        
         
     def determine_match_fallout(self,winner,loser,winner_move,loser_move):
         winner.gain_move(loser_move)

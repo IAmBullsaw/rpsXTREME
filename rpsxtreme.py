@@ -30,17 +30,22 @@ def clear_screen():
 
 def get_random_from_list(l):
     return l[randint(0,len(l)-1)]
-        
+
+def get_players():
+    player2 = Player(get_random_from_list(["Greger","Herman","Abraham", "Gunhilda", "Berit", "Handson"]))
+    name = input("What is your name?: ")
+    player1 = Player(name)
+    return player1, player2
+    
 def main(debug = False):
     clear_screen()
     
     judge = Judge()
-    player2 = Player(get_random_from_list(["Greger","Herman","Abraham", "Gunhilda", "Berit", "Handson"]))
+    
     done = False
 
     print("Welcome to rpsEXTREME")
-    name = input("What is your name?: ")
-    player1 = Player(name)
+    player1, player2 = get_players()
 
     stats = Statistics(player1, player2)
     while not done:
@@ -52,9 +57,9 @@ def main(debug = False):
         if p1_choice < 0 or p2_choice < 0:
             done = True
         else:
-            outcome, winner, loser, winner_move, loser_move = judge.determine_match_outcome(player1, p1_choice, player2, p2_choice)
+            winner, loser, winner_move, loser_move = judge.determine_match_outcome(player1, p1_choice, player2, p2_choice)
             
-            if (outcome != Outcome.DRAW):
+            if (winner != None):
                 print("The winner is: {}".format(winner.get_name()))
                 judge.determine_match_fallout(winner,loser, winner_move, loser_move)
             else:
@@ -69,16 +74,34 @@ def main(debug = False):
 def pseudo():
     judge = Judge()
     p1, p2 = get_players()
-
+    stats = Statistics(p1,p2)
+    
     judge.on_start_of_match(p1,p2)
     for i in range(5):
-        judge.on_start_of_turn(p1,p2)
-
+        #judge.on_start_of_turn(p1,p2)
+        
+        # If a player has no more moves left match is over
+        if not p1.has_moves_left() or not p2.has_moves_left():
+            return
+        
         # Begin turn and request choices
+        stats.show()
         p1_choice = get_player_choice(p1)
         p2_choice = judge.get_random_choice(p2)
-
-        # 
+        
+        # Get outcome
+        winner, loser, winner_move, loser_move = judge.determine_match_outcome(p1,
+                                                                               p1_choice,
+                                                                               p2,
+                                                                               p2_choice)
+        if (winner != None):
+            judge.determine_match_fallout(winner, loser, winner_move, loser_move)
+        else:
+            judge.determine_draw_fallout(p1,p2,p1_choice,p2_choice)
+            
+    stats.show()
+    stats.show_winner()
     
 if __name__ == '__main__':
-    main(debug = False)
+    #main(debug = False)
+    pseudo()
