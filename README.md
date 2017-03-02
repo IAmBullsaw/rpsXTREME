@@ -34,3 +34,16 @@ What first seemed to be a stupid idea evolved even further.
 I have a raspberry pi and figured I should make this game into some online rpsxtreme game, because rpsXtreme is super fun.
 
 Idea: The server is responsible for matching 2 users and let them play a match. then they can request to play one more with another random user.
+
+connection protocol:
+client:
+´´´
+connect
+send player data
+recv match connected and who to battle
+match_continues = True
+while match_continues:
+    send turn move
+    recv turn outcome and stats and recvd_match_continues
+    match_continues = recvd_match_continues
+´´´

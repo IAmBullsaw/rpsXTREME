@@ -50,9 +50,6 @@ class Player:
     def get_name(self):
         return self.name
 
-    def is_retarded(self):
-        return self.retarded
-
     def has_moves_left(self):
         return (self.rocks > 0 or self.papers > 0 or self.scissors > 0)
         
@@ -65,7 +62,22 @@ class Player:
             return self.scissors > 0
 
     def pack_to_string(self):
-        return "{}|{}|{}|{}".format(self.name,self.rocks,self.papers,self.scissors,self.points,self.wins)
+        return "{}|{}|{}|{}|{}|{}".format(self.name,
+                                          self.rocks,
+                                          self.papers,
+                                          self.scissors,
+                                          self.points,
+                                          self.wins)
 
     def unpack_from_string(self,string):
-        pass
+        self.name,self.rocks,self.papers,self.scissors,self.points,self.wins = string.split('|')
+
+def test():
+    p = Player('p')
+    s = p.pack_to_string()
+    p2 = Player('p2')
+    p2.unpack_from_string(s)
+    print('Names are equal after unpack: ',p.get_name() == p2.get_name())
+    
+if __name__ == '__main__':
+    test()

@@ -1,4 +1,9 @@
 import socket
+import sys
+from random import randint
+
+sys.path.insert(0,'../game')
+from player import Player
 
 debug = True
 
@@ -20,8 +25,6 @@ def pdot():
     if debug:
         print('.', end="")
 
-    
-
 class RPSXServer:
 
     def __init__(self,host,port = 4711, connections = 5):
@@ -29,6 +32,9 @@ class RPSXServer:
         self.host = host
         self.port = port
         self.connections = connections
+        self.players = []
+        self.uid = 0
+        
         ok = self.setup_server()
         if not ok:
             raise "Server not OK"
@@ -59,12 +65,41 @@ class RPSXServer:
 
     def handle_connection(self,cs,addr):
         pl("handling connection with {}".format(str(addr)))
-        message = 'Thank you for connecting' + "\r\n"
+
+        p = self.recv_player(cs)
+        uid = self.create_unique_id()
+        self.players.append((uid,p,cs,addr))
+        
+        message = 'Thank you for connecting, setting up match...' + "\r\n"
         cs.send(message.encode('ascii'))
 
         pl("Closing connection to {}".format(str(addr)))
-        cs.close()
+        self.close_connection(uid)
 
+    def close_connection(self,uid):
+        for entry in self.players:
+            if entry[0] == uid:
+                entry[2].close()
+                self.remove_players_entry()
+
+    def remove_players_entry(self,entry):
+        self.players.remove
+        
+    def recv_player(self,cs):
+        msg = cs.recv(1024)
+        player = Player("Server")
+        player.unpack_from_string(msg.decode('ascii'))
+        return player
+
+    def recv_move(self,cs):
+        msg = cs.recv(1024)
+        pl(msg.decode('ascii'))
+
+    def create_unique_id(self):
+        uid = self.uid
+        self.uid = self.uid + 1
+        return uid
+    
     def run(self):
         pl("waiting for connections...")
         done = False
