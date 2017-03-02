@@ -2,7 +2,7 @@ from random import randint
 from enums import Move
 
 class Player:
-    def __init__(self, name, retarded = False):
+    def __init__(self, name=None, retarded = False):
         self.name = name + self.get_power_name()
         self.rocks = 1 if not retarded else 0
         self.papers = 1 if not retarded else 0
@@ -63,3 +63,9 @@ class Player:
             return self.papers > 0
         else:
             return self.scissors > 0
+
+    def pack_to_string(self):
+        return "{}|{}|{}|{}".format(self.name,self.rocks,self.papers,self.scissors,self.points,self.wins)
+
+    def unpack_from_string(self,string):
+        pass
