@@ -11,9 +11,9 @@ debug = True
 def pl(message,t=True):
     if debug:
         if t:
-            print("\t" + message)
+            print("\t" + str(message))
         else:
-            print(message)
+            print(str(message))
 
 def p(message,t=True):
     if debug:
@@ -34,6 +34,7 @@ class RPSXServer:
         self.connections = connections
         self.players = []
         self.uid = 0
+        self.muid = 0
         
         ok = self.setup_server()
         if not ok:
@@ -63,27 +64,15 @@ class RPSXServer:
         pl("listening to max {} connections".format(self.connections))
         return True
 
-    def handle_connection(self,cs,addr):
-        pl("handling connection with {}".format(str(addr)))
-
-        p = self.recv_player(cs)
-        uid = self.create_unique_id()
-        self.players.append((uid,p,cs,addr))
-        
-        message = 'Thank you for connecting, setting up match...' + "\r\n"
-        cs.send(message.encode('ascii'))
-
-        pl("Closing connection to {}".format(str(addr)))
-        self.close_connection(uid)
-
     def close_connection(self,uid):
-        for entry in self.players:
+        for i,entry in enumerate(self.players):
             if entry[0] == uid:
                 entry[2].close()
-                self.remove_players_entry()
+                self.remove_players_entry(i)
 
-    def remove_players_entry(self,entry):
-        self.players.remove
+    def remove_players_entry(self,i):
+        self.players.pop(i)
+        pl(len(self.players))
         
     def recv_player(self,cs):
         msg = cs.recv(1024)
@@ -99,6 +88,11 @@ class RPSXServer:
         uid = self.uid
         self.uid = self.uid + 1
         return uid
+
+    def create_match_uid(self):
+        muid = self.muid
+        self.muid = self.muid + 1
+        return muid
     
     def run(self):
         pl("waiting for connections...")
@@ -124,6 +118,46 @@ class RPSXServer:
         self.server_socket.close()
         self.server_socket = None
         pl("closed socket")
+
+    def handle_connection(self,cs,addr):
+        pl("handling connection with {}".format(str(addr)))
+
+        p = self.recv_player(cs)
+        uid = self.create_unique_id()
+        self.players.append((uid,p,cs,addr))
+        pl(str(self.players), len(self.players))
+
+        done = False
+        while not done:
+            ans = self.recv_cmd(cs)
+            if ans < 0:
+                done = True
+                continue
+            if ans == 0:
+                if len(self.players) > 1:
+                    pass
+                else:
+                    # we are only player, connect to bot
+                    pl("Making match between you and AI")
+
+        pl("Closing connection to {}".format(str(addr)))
+        #self.close_connection(uid)
+
+    def recv_cmd(self,cs):
+        cmd = cs.recv(5)
+        cmd = str(cmd.decode('ascii'))
+        ans = 0
+        pl('cmd == ' + cmd)
+        if cmd == 'q':
+            pl('q was requested')
+            ans = -1
+        elif cmd == 'lfg':
+            pl('lfg was requested')
+            ans = 0
+        else:
+            pl('unknown cmd')
+            ans = -2
+        return ans
     
 if __name__ == '__main__':
     server = RPSXServer(socket.gethostname())
