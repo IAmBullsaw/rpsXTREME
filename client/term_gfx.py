@@ -9,7 +9,7 @@ class Graphics:
         
     def welcome_screen(self):
         print(self.divider)
-        print(" "*12,"Welcome to rpsEXTREME")
+        print(" "*12,"Welcome to rpsXtreme!")
         print(self.divider)
 
     def goodbye_screen(self):

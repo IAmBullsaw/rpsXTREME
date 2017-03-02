@@ -2,7 +2,7 @@ import socket
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = socket.gethostname()
-port = 5002
+port = 4711
 
 sock.connect((host,port))
 msg = sock.recv(1024)
