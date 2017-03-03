@@ -75,12 +75,12 @@ class Player:
                     choice = int(choice)
                     choice -= 1 # minus one since choices do not begin with 0
                     choice = choice % 3
-                    if player.can_choose_move(choice):
+                    if self.can_choose_move(choice):
                         done = True
         else:
             while not done:
                 choice = randint(0,2)
-                if player.can_choose_move(choice):
+                if self.can_choose_move(choice):
                     done = True
         return choice
         
