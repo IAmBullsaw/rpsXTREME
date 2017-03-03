@@ -1,12 +1,14 @@
 import socket
 import sys
+import time
 from random import randint
 
 sys.path.insert(0,'../game')
+from rpsxtreme import RPSXGame
+from judge import Judge
 from player import Player
 
 debug = True
-
 
 def pl(message,t=True):
     if debug:
@@ -35,6 +37,8 @@ class RPSXServer:
         self.players = []
         self.uid = 0
         self.muid = 0
+        self.time = None
+        self.total_players = 0
         
         ok = self.setup_server()
         if not ok:
@@ -45,6 +49,16 @@ class RPSXServer:
         pl("*"*(len(message) + 22))
         pl("*" + " "*10 + message + " "*10 + "*")
         pl("*"*(len(message) + 22))
+
+    def goodbye(self):
+        message = "Goodbye, for now..."
+        message2 = "Uptime: {}".format(str(( time.time() - self.time)))
+        message3 = "Total players: {}".format(self.total_players)
+        pl("*"*(len(message2) + 22))
+        pl("*" + " "*10 + message + " "*10 + "*")
+        pl("*" + " "*10 + message2 + " "*10 + "*")
+        pl("*" + " "*10 + message3 + " "*10 + "*")
+        pl("*"*(len(message2) + 22))
         
     def setup_server(self):
         p("setting up server")
@@ -63,7 +77,7 @@ class RPSXServer:
         return True
 
     def close_connection(self,uid = None, cs = None):
-        pl("Closing connection to {}".format(str(uid)))
+        pl("Closing connection to {}".format(str(uid) if uid else str(cs) ))
         if uid:
             for i,entry in enumerate(self.players):
                 if entry[0] == uid:
@@ -81,7 +95,7 @@ class RPSXServer:
 
     def remove_players_entry(self,i):
         self.players.pop(i)
-        pl(len(self.players))
+        pl('Players online: {}'.format(len(self.players)))
         
     def recv_player(self,cs):
         msg = cs.recv(1024)
@@ -104,6 +118,7 @@ class RPSXServer:
         return muid
     
     def run(self):
+        self.time = time.time()
         self.welcome()
         pl("waiting for connections...")
         done = False
@@ -111,6 +126,7 @@ class RPSXServer:
             try:
                 client_socket, addr = self.server_socket.accept()
                 pl("connection from {}".format(str(addr)))
+                self.total_players += 1
                 self.handle_connection(client_socket,addr)
             except (KeyboardInterrupt, SystemExit):
                 done = True
@@ -124,7 +140,7 @@ class RPSXServer:
 
     def quit(self):
         pl("tearing down server")
-        
+        self.goodbye()
         self.server_socket.close()
         self.server_socket = None
         pl("closed socket")
@@ -132,44 +148,57 @@ class RPSXServer:
     def handle_connection(self,cs,addr):
         pl("handling connection with {}".format(str(addr)))
 
+        # Receive connected users player
         p = self.recv_player(cs)
         uid = self.create_unique_id()
+        # Add player to players
         self.players.append((uid,p,cs,addr))
+        
         pl(str(self.players), len(self.players))
 
+        # User speaks to server
         done = False
         while not done:
-            ans = self.recv_cmd(cs)
-            eval(ans)
+            ans, done = self.recv_cmd(cs)
+            exec(ans)
 
-        self.close_connection(cs)
+        # User is done with this session
+        self.close_connection(cs = cs)
 
     def handle_match_request(self,cs,p):
         pl('handling match request from {}'.format(str(p)))
         if self.has_players():
+            pl('setting up normal match...')
             pass
         else:
             pl('setting up bot match...')
+            match = RPSXGame(p,Player("Gunhilda",bot=True), Judge())
         
     def recv_cmd(self,cs):
+        pl('waiting to recv...')
         cmd = cs.recv(5)
-
-        if not cmd:
-            return 'done = True'
-        
         cmd = str(cmd.decode('ascii'))
+        
         ans = 'self.unknown_cmd()'
-        pl('cmd == ' + cmd)
-        if cmd == 'q':
-            pl('q was requested')
-            ans = 'done = True'
-        elif cmd == 'lfg':
-            pl('lfg was requested')
-            ans = 'self.handle_match_request(cs,p)'
+        done = False
+        # Is connection closed?
+        if cmd == 0 or not cmd or cmd == '' or cmd == None:
+            pl('recv: connection was closed')
+            ans = ''
+            done = True
+        # What was the command?
         else:
-            pl('unknown cmd')
-            ans = 'self.unknown_cmd()'
-        return ans
+            if cmd == 'q':
+                pl('recv: q was requested')
+                ans = ''
+                done = True
+            elif cmd == 'lfg':
+                pl('recv: lfg was requested')
+                ans = 'self.handle_match_request(cs,p)'
+            else:
+                pl('recv: unknown cmd')
+                ans = 'self.unknown_cmd()'
+        return ans, done
 
     def has_players(self):
         return len(self.players) > 1
