@@ -6,7 +6,7 @@ from judge import Judge
 from statistics import Statistics
 from term_gfx import Graphics
 
-debug = False
+debug = True
 
 class RPSXGame:
 
