@@ -2,13 +2,14 @@ from random import randint
 from enums import Move
 
 class Player:
-    def __init__(self, name=None, retarded = False):
+    def __init__(self, name = None, bot = False):
         self.name = name + self.get_power_name()
-        self.rocks = 1 if not retarded else 0
-        self.papers = 1 if not retarded else 0
+        self.rocks = 1
+        self.papers = 1 
         self.scissors = 1
         self.points = 0
         self.wins = 0
+        self.bot = bot
 
     def get_power_name(self):
         l = ["the Defiler","the Crusher of Hands","of Doom","the Hand Magician"]
@@ -61,6 +62,28 @@ class Player:
         else:
             return self.scissors > 0
 
+    def get_chosen_move(self):
+        choice = -1
+        done = False
+        if not self.bot:
+            while not done:
+                choice = input('What is your move?: ')
+                if choice in ['q','quit','exit']:
+                    done = True
+                    choice = -1
+                if choice in '123':
+                    choice = int(choice)
+                    choice -= 1 # minus one since choices do not begin with 0
+                    choice = choice % 3
+                    if player.can_choose_move(choice):
+                        done = True
+        else:
+            while not done:
+                choice = randint(0,2)
+                if player.can_choose_move(choice):
+                    done = True
+        return choice
+        
     def pack_to_string(self):
         return "{}|{}|{}|{}|{}|{}".format(self.name,
                                           self.rocks,
@@ -74,7 +97,9 @@ class Player:
 
     def __repr__(self):
         return "<player " + self.pack_to_string() +'>'
-        
+
+#######
+# Tests
 def test():
     p = Player('p')
     s = p.pack_to_string()
