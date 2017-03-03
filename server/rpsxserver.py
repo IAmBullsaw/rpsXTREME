@@ -1,6 +1,6 @@
 import socket
 import sys
-import time
+from timeit import default_timer as timer
 from random import randint
 
 sys.path.insert(0,'../game')
@@ -37,7 +37,7 @@ class RPSXServer:
         self.players = []
         self.uid = 0
         self.muid = 0
-        self.time = None
+        self.start_time = None
         self.total_players = 0
         
         ok = self.setup_server()
@@ -51,14 +51,22 @@ class RPSXServer:
         pl("*"*(len(message) + 22))
 
     def goodbye(self):
-        message = "Goodbye, for now..."
-        message2 = "Uptime: {}".format(str(( time.time() - self.time)))
+        message = "Goodbye for now..."
+        message2 = "Uptime: {}".format(str(( timer() - self.start_time)))
         message3 = "Total players: {}".format(self.total_players)
-        pl("*"*(len(message2) + 22))
-        pl("*" + " "*10 + message + " "*10 + "*")
+
+        length = len(message2) + 22
+        l = length - len(message) - 2
+        l /= 2
+        l = int(l)
+        pl("*"*(length))
+        pl("*" + " "*l + message + " "*l + "*")
         pl("*" + " "*10 + message2 + " "*10 + "*")
-        pl("*" + " "*10 + message3 + " "*10 + "*")
-        pl("*"*(len(message2) + 22))
+        l = length - len(message3) - 2
+        l /= 2
+        l = int(l)
+        pl("*" + " "*l + message3 + " "*l + "*")
+        pl("*"*(length))
         
     def setup_server(self):
         p("setting up server")
@@ -118,7 +126,7 @@ class RPSXServer:
         return muid
     
     def run(self):
-        self.time = time.time()
+        self.start_time = timer()
         self.welcome()
         pl("waiting for connections...")
         done = False
