@@ -62,11 +62,22 @@ class RPSXServer:
         pl("listening to max {} connections".format(self.connections))
         return True
 
-    def close_connection(self,uid):
-        for i,entry in enumerate(self.players):
-            if entry[0] == uid:
-                entry[2].close()
-                self.remove_players_entry(i)
+    def close_connection(self,uid = None, cs = None):
+        pl("Closing connection to {}".format(str(uid)))
+        if uid:
+            for i,entry in enumerate(self.players):
+                if entry[0] == uid:
+                    entry[2].close()
+                    self.remove_players_entry(i)
+                    break
+        elif cs:
+            for i,entry in enumerate(self.players):
+                if entry[2] == cs:
+                    entry[2].close()
+                    self.remove_players_entry(i)
+                    break
+        else:
+            pl('uid = {}, cs = {}'.format(str(uid),str(cs)))                    
 
     def remove_players_entry(self,i):
         self.players.pop(i)
@@ -93,7 +104,6 @@ class RPSXServer:
         return muid
     
     def run(self):
-        
         self.welcome()
         pl("waiting for connections...")
         done = False
@@ -130,34 +140,42 @@ class RPSXServer:
         done = False
         while not done:
             ans = self.recv_cmd(cs)
-            if ans < 0:
-                done = True
-                continue
-            if ans == 0:
-                if len(self.players) > 1:
-                    pass
-                else:
-                    # we are only player, connect to bot
-                    pl("Making match between you and AI")
+            eval(ans)
 
-        pl("Closing connection to {}".format(str(addr)))
-        #self.close_connection(uid)
+        self.close_connection(cs)
 
+    def handle_match_request(self,cs,p):
+        pl('handling match request from {}'.format(str(p)))
+        if self.has_players():
+            pass
+        else:
+            pl('setting up bot match...')
+        
     def recv_cmd(self,cs):
         cmd = cs.recv(5)
+
+        if not cmd:
+            return 'done = True'
+        
         cmd = str(cmd.decode('ascii'))
-        ans = 0
+        ans = 'self.unknown_cmd()'
         pl('cmd == ' + cmd)
         if cmd == 'q':
             pl('q was requested')
-            ans = -1
+            ans = 'done = True'
         elif cmd == 'lfg':
             pl('lfg was requested')
-            ans = 0
+            ans = 'self.handle_match_request(cs,p)'
         else:
             pl('unknown cmd')
-            ans = -2
+            ans = 'self.unknown_cmd()'
         return ans
+
+    def has_players(self):
+        return len(self.players) > 1
+
+    def unknown_cmd(self):
+        pass
     
 if __name__ == '__main__':
     server = RPSXServer(socket.gethostname())
