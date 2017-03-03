@@ -39,8 +39,6 @@ class RPSXServer:
         ok = self.setup_server()
         if not ok:
             raise "Server not OK"
-        else:
-            self.welcome()
 
     def welcome(self):
         message = "Welcome to the rpsXtreme server"
@@ -95,6 +93,8 @@ class RPSXServer:
         return muid
     
     def run(self):
+        
+        self.welcome()
         pl("waiting for connections...")
         done = False
         while not done:
