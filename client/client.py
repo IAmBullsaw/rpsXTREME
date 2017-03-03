@@ -1,4 +1,5 @@
 import sys
+from time import sleep
 sys.path.insert(0, '../game')
 
 import socket
@@ -41,6 +42,7 @@ if __name__ == '__main__':
     cli = RPSXClient(host=socket.gethostname())
     cli.connect()
     cli.send_player(p)
+    sleep(1)
     cli.request_match()
     #cli.recv_start_match_data()
     cli.close()
