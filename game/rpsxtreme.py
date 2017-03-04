@@ -72,7 +72,11 @@ class RPSXGame:
                 self.judge.determine_draw_fallout(self.p1, self.p2, p1_choice, p2_choice)
         gfx.show_stats(self.stats)
         gfx.show_winner(self.stats)
-    
+
+
+    def get_snapshot(self):
+        NotImplemented
+        
 ################
 # Old colde -_-
 """
