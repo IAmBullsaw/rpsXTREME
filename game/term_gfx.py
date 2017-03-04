@@ -20,15 +20,21 @@ class Graphics:
         
 
     def battling_players(self,p1,p2):
-        print("Right now, this match is between")
-        print("\n{} vs {}\n".format((p1.get_name()).capitalize(), p2.get_name()) )
+        print(self.divider)
+        print("Welcome to this match of rpsXtreme!")
+        print("This match is between")
+        print("\n\t{} VS. {}\n".format((p1.get_name()).capitalize(), p2.get_name()) )
+        print("FIGHT!")
+        print(self.divider)
 
     def show_moves(self,moves):
         print("Current moves:\n1. Rocks: {}\n2. Papers: {}\n3. Scissors {}".format(moves[0],
                                                                                    moves[1],
                                                                                    moves[2]))
-    def show_winner(self,player):
+    def show_player_won(self,player):
+        print(self.divider)
         print("The winner of the turn is: {}".format(player.get_name()))
+        print(self.divider)
 
     def show_draw(self):
         print(self.divider)
@@ -40,3 +46,9 @@ class Graphics:
         
     def show_winner(self, stats):
         stats.show_winner()
+
+    def show_snapshot(self,snapshot):
+        print("\n\tSnapshot:")
+        p1, p2, match = snapshot.split('|')
+        print("\tp1 vs p2")
+        print('\t'+match+'\n')
