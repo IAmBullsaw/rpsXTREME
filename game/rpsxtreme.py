@@ -14,7 +14,7 @@ def pl(message,t=True):
 
 class RPSXGame:
 
-    def __init__(self,p1,p2,judge):
+    def __init__(self,p1,p2,judge,bot=False):
         self.p1 = p1
         self.p2 = p2
         self.p1_move = None
@@ -22,6 +22,7 @@ class RPSXGame:
         self.judge = judge
         self.stats = Statistics(p1,p2)
         self.winner = None
+        self.bot_match = bot
         
     def set_p1_move(self,move):
         self.p1_move = move
@@ -34,12 +35,15 @@ class RPSXGame:
         self.p2_move = None
             
     def get_snapshot(self):
-        return "{}|{}|{}".format(self.p1.pack_to_string(),
+        return "{}:{}:{}".format(self.p1.pack_to_string(),
                                  self.p2.pack_to_string(),
                                  self.stats.pack_to_string())
-
     def play(self):
         pl("Playing {} against {}".format(self.p1_move,self.p2_move))
+
+        if self.bot_match:
+            self.p2_move = self.p2.get_chosen_move()
+        
         if not self.p1_move or not self.p2_move:
             raise Exception("All moves arent set")
 

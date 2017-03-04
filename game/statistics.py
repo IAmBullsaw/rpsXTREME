@@ -45,4 +45,4 @@ class Statistics:
                                                                     (self.p2).get_points() ))
 
     def pack_to_string(self):
-        return "{}\{}\{}".format(self.p1.get_name(),self.p2.get_name(),str(self.score))
+        return "{}".format(str(self.score))

@@ -49,6 +49,7 @@ class Graphics:
 
     def show_snapshot(self,snapshot):
         print("\n\tSnapshot:")
-        p1, p2, match = snapshot.split('|')
+        print(snapshot)
+        p1, p2, stats = snapshot.split(':')
         print("\tp1 vs p2")
-        print('\t'+match+'\n')
+        print('\t'+stats+'\n')

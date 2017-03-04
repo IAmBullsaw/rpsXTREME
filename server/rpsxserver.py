@@ -199,10 +199,10 @@ class RPSXServer:
         pl('handling match request from {}'.format(str(p)))
         if self.has_players():
             pl('setting up normal match...')
-            pass
+            raise Exception(NotImplemented)
         else:
             pl('setting up bot match...')
-            match = RPSXGame(p,Player("Gunhilda",bot=True), Judge())
+            match = RPSXGame(p,Player("Gunhilda",bot=True), Judge(),bot=True)
             self.send_cmd(cs,Command.OK)
             cmd = self.recv_cmd(cs)
             if not cmd == Command.REQUEST_SNAPSHOT:
@@ -223,7 +223,7 @@ class RPSXServer:
         while not done:
             self.send_cmd(cs,Command.REQUEST_MOVE)
             p1_mov = self.recv_mov(cs)
-            match.recv_p1_move(p1_mov)
+            match.set_p1_move(p1_mov)
             match.play()
         
     def recv_cmd(self,cs):
