@@ -67,15 +67,19 @@ class RPSXGame:
                                                                                         self.p2,
                                                                                         p2_choice)
             if (winner != None):
+                self.stats.register_score(winner.get_name())
                 self.judge.determine_match_fallout(winner, loser, winner_move, loser_move)
+                gfx.show_player_won(winner)
             else:
+                self.stats.register_score(None)
                 self.judge.determine_draw_fallout(self.p1, self.p2, p1_choice, p2_choice)
+                gfx.show_draw()
         gfx.show_stats(self.stats)
         gfx.show_winner(self.stats)
 
 
     def get_snapshot(self):
-        NotImplemented
+        return "{}".format(self.stats.pack_to_string())
         
 ################
 # Old colde -_-
