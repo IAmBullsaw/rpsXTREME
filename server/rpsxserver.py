@@ -1,14 +1,19 @@
 import socket
 import sys
+import os
 from timeit import default_timer as timer
 from random import randint
 from time import sleep
+
+# When running as a script cwd is not script dir.
+# Change cwd to dir where this file is...
+os.chdir(os.path.dirname(__file__))
 
 sys.path.insert(0,'../game')
 from rpsxtreme import RPSXGame
 from judge import Judge
 from player import Player
-from enums import Command
+from enums import Command, Move
 
 debug = True
 
@@ -175,7 +180,7 @@ class RPSXServer:
         # Add player to players
         self.players.append((uid,p,cs,addr))
         
-        pl(str(self.players), len(self.players))
+        #pl(str(self.players), len(self.players))
 
         # We received player and set up our part correctly, send OK
         self.send_cmd(cs,Command.OK)
@@ -199,13 +204,41 @@ class RPSXServer:
             pl('setting up bot match...')
             match = RPSXGame(p,Player("Gunhilda",bot=True), Judge())
             self.send_cmd(cs,Command.OK)
+            cmd = self.recv_cmd(cs)
+            if not cmd == Command.REQUEST_SNAPSHOT:
+                pass #:(
+
+            self.send_cmd(cs,Command.OK)
             sleep(0.01)
             self.send_match_snapshot(cs,match.get_snapshot())
-            
+
+            cmd = self.recv_cmd(cs)
+            if not cmd == Command.OK:
+                raise Exception("client is not OK with snapshot")
+            pl('match set up')
+            self.handle_bot_match(cs,match)
+
+    def handle_bot_match(self,cs,match):
+        done = False
+        while not done:
+            self.send_cmd(cs,Command.REQUEST_MOVE)
+            p1_mov = self.recv_mov(cs)
+            match.recv_p1_move(p1_mov)
+            match.play()
+        
     def recv_cmd(self,cs):
-        pl('waiting for command...')
-        cmd = cs.recv(5)
-        return Command.decode(cmd)
+        pl('waiting for command...')        
+        cmd = cs.recv(10)
+        cmd = Command.decode(cmd)
+        pl("recv: {}".format(cmd))
+        return cmd
+
+    def recv_mov(self,cs):
+        pl("waiting for move...")
+        mov = cs.recv(10)
+        mov = Move.decode(mov)
+        pl("recv: {}".format(mov))
+        return mov
 
     def cmd_to_instructions(self,cmd):
         ans = 'self.unknown_cmd()'
@@ -230,7 +263,7 @@ class RPSXServer:
         return ans, done
 
     def send_cmd(self,cs,cmd):
-        pl("send: '{}' to '{}'".format(cmd,str(cs)))
+        pl("send: '{}' to '{}'".format(cmd,str(cs.getpeername())))
         cs.send(cmd.encode('ascii'))
     
     def has_players(self):
@@ -240,9 +273,8 @@ class RPSXServer:
         pass
 
     def send_match_snapshot(self,cs,snapshot):
+        pl("sending snapshot...")
         cs.send(snapshot.encode('ascii'))
-        cmd = self.recv_cmd()
-        
 
         
 if __name__ == '__main__':
