@@ -1,174 +1,85 @@
-from random import randint
-from time import sleep
-from player import Player
-from enums import Move, Outcome
+from enums import Move
 from judge import Judge
+from player import Player
 from statistics import Statistics
-from term_gfx import Graphics
 
 debug = True
 
+def pl(message,t=True):
+    if debug:
+        if t:
+            print("\t" + str(message))
+        else:
+            print(str(message))
+
 class RPSXGame:
 
-    def __init__(self, p1, p2, judge):
+    def __init__(self,p1,p2,judge):
         self.p1 = p1
         self.p2 = p2
+        self.p1_move = None
+        self.p2_move = None
         self.judge = judge
-        self.stats = Statistics(p1, p2)
-    
-    def get_player_choice(self, player):
-        done = False
-        choice = -1
-        while not done:
-            choice = input('What is your move?: ')
-            if choice in ['q','quit','exit']:
-                done = True
-                choice = -1
-            if choice in '123':
-                choice = int(choice)
-                choice -= 1 # minus one since choices do not begin with 0
-                choice = choice % 3
-                if player.can_choose_move(choice):
-                    done = True
-        return choice
+        self.stats = Statistics(p1,p2)
+        self.winner = None
+        
+    def set_p1_move(self,move):
+        self.p1_move = move
+
+    def set_p2_move(self,move):
+        self.p2_move = move
+
+    def reset_moves(self):
+        self.p1_move = None
+        self.p2_move = None
+            
+    def get_snapshot(self):
+        return "{}|{}|{}".format(self.p1.pack_to_string(),
+                                 self.p2.pack_to_string(),
+                                 self.stats.pack_to_string())
 
     def play(self):
-        gfx = Graphics()
+        pl("Playing {} against {}".format(self.p1_move,self.p2_move))
+        if not self.p1_move or not self.p2_move:
+            raise Exception("All moves arent set")
 
-        gfx.battling_players(self.p1, self.p2)
         self.judge.on_start_of_match(self.p1, self.p2)
-        for i in range(5):
-            #judge.on_start_of_turn(p1,p2)
-        
-            # If a player has no more moves left match is over
-            if not self.p1.has_moves_left() or not self.p2.has_moves_left():
-                gfx.show_stats(self.stats)
-                gfx.show_winner(self.stats)
-                return
-
-            # Begin turn and request choices
-        
-            gfx.show_stats(self.stats)
-            gfx.show_moves(self.p1.get_moves())
-            p1_choice = self.p1.get_chosen_move()#  get_player_choice(self.p1)
-
-            # if choice is -1, we wanted to exit.
-            if p1_choice == -1:
-                gfx.show_stats(self.stats)
-                gfx.goodbye_screen()
-                return
-        
-        
-            p2_choice = self.judge.get_random_choice(self.p2)
-        
-            # Get outcome
-            winner, loser, winner_move, loser_move = self.judge.determine_match_outcome(self.p1,
-                                                                                        p1_choice,
-                                                                                        self.p2,
-                                                                                        p2_choice)
-            if (winner != None):
-                self.stats.register_score(winner.get_name())
-                self.judge.determine_match_fallout(winner, loser, winner_move, loser_move)
-                gfx.show_player_won(winner)
-            else:
-                self.stats.register_score(None)
-                self.judge.determine_draw_fallout(self.p1, self.p2, p1_choice, p2_choice)
-                gfx.show_draw()
-        gfx.show_stats(self.stats)
-        gfx.show_winner(self.stats)
-
-
-    def get_snapshot(self):
-        return "{}".format(self.stats.pack_to_string())
-        
-################
-# Old colde -_-
-"""
-def show_moves(player):
-    print("{}'s moves:\n1. Rocks: {}\n2. Paper: {}\n3. Scissors: {}\n".format(player.name,player.rocks,player.papers,player.scissors))
-            
-def get_player_choice(player):
-    done = False
-    choice = -1
-    while not done:
-        choice = input('What is your move?: ')
-        if choice in ['q','quit','exit','fuck']:
-            done = True
-            choice = -1
-        if choice in '123':
-            choice = int(choice)
-            choice -= 1 # minus one since choices do not begin with 0
-            choice = choice % 3
-            if player.can_choose_move(choice):
-                done = True
-    return choice
-
-def get_random_from_list(l):
-    return l[randint(0,len(l)-1)]
-
-def get_players():
-    player2 = Player(get_random_from_list(["Greger","Herman","Abraham", "Gunhilda", "Berit", "Handson"]))
-    name = input("What is your name?: ")
-    player1 = Player(name.capitalize() )
-    return player1, player2
-
-def get_opponent(retarded = False):
-    return Player(get_random_from_list(["Greger","Herman","Abraham", "Gunhilda", "Berit", "Handson"]))
-
-def match(p1,p2):
-    judge = Judge()
-    stats = Statistics(p1,p2)
-    gfx = Graphics()
-
-    gfx.battling_players(p1, p2)
-    judge.on_start_of_match(p1, p2)
-    for i in range(5):
-        #judge.on_start_of_turn(p1,p2)
-        
-        # If a player has no more moves left match is over
-        if not p1.has_moves_left() or not p2.has_moves_left():
-            gfx.show_stats(stats)
-            gfx.show_winner(stats)
-            return
-
-        # Begin turn and request choices
-        
-        gfx.show_stats(stats)
-        gfx.show_moves(p1.get_moves())
-        p1_choice = get_player_choice(p1)
-
-        # if choice is -1, we wanted to exit.
-        if p1_choice == -1:
-            gfx.show_stats(stats)
-            gfx.goodbye_screen()
-            return
-            
-        
-        p2_choice = judge.get_random_choice(p2)
-        
-        # Get outcome
-        winner, loser, winner_move, loser_move = judge.determine_match_outcome(p1,
-                                                                               p1_choice,
-                                                                               p2,
-                                                                               p2_choice)
+        winner, loser, winner_move, loser_move = self.judge.determine_match_outcome(self.p1,
+                                                                                    self.p1_move,
+                                                                                    self.p2,
+                                                                                    self.p2_move)
         if (winner != None):
-            judge.determine_match_fallout(winner, loser, winner_move, loser_move)
+            self.stats.register_score(winner.get_name())
+            self.judge.determine_match_fallout(winner, loser, winner_move, loser_move)
         else:
-            judge.determine_draw_fallout(p1, p2, p1_choice, p2_choice)
-    gfx.show_stats(stats)
-    gfx.show_winner(stats)
+            self.stats.register_score(None)
+            self.judge.determine_draw_fallout(self.p1,
+                                              self.p2,
+                                              self.p1_move,
+                                              self.p2_move)
+        self.reset_moves()
 
+    def finish(self):
+        self.winner = self.stats.get_match_winner()
+
+    def get_winner(self):
+        return self.winner
+        
 if __name__ == '__main__':
-    name = input("What is your name?: ")
-    p1 = Player(name.capitalize())
-    done = False
-    gfx = Graphics()
-    gfx.clear_screen()
-    gfx.welcome_screen()
-    while not done:
-        p2 = get_opponent()
-        match(p1,p2)
-        answer = input('Are you done kicking ass? (y/n)')
-        if answer in ['yes','yeah','yup','y']:
-            done = True
-"""
+    print("Testing game")
+    p1 = Player('p1')
+    p2 = Player('p2')
+    match = RPSXGame(p1,p2,Judge())
+    match.set_p1_move(Move.ROCK)
+    match.set_p2_move(Move.PAPER)
+    match.play() # P2 should win
+    score = match.get_snapshot().split('\\')[2]
+    pl("p2 wins: " + score[1] == '1')
+    match.set_p1_move(Move.ROCK)
+    match.set_p2_move(Move.ROCK)
+    match.play() # Should be a tie
+    score = match.get_snapshot().split('\\')[2]
+    pl("'twas a tie: " + score[4] == '0')
+    match.finish()
+    winner = match.get_winner()
+    pl("Winner is: {}".format(winner))
