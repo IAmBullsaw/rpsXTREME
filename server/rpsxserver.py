@@ -2,11 +2,13 @@ import socket
 import sys
 from timeit import default_timer as timer
 from random import randint
+from time import sleep
 
 sys.path.insert(0,'../game')
 from rpsxtreme import RPSXGame
 from judge import Judge
 from player import Player
+from enums import Command
 
 debug = True
 
@@ -52,7 +54,8 @@ class RPSXServer:
 
     def goodbye(self):
         message = "Goodbye for now..."
-        message2 = "Uptime: {}".format(str(( timer() - self.start_time)))
+        uptime = (timer() - self.start_time)/60
+        message2 = "Uptime: {} minutes".format(str(uptime))
         message3 = "Total players: {}".format(self.total_players)
 
         length = len(message2) + 22
@@ -134,24 +137,34 @@ class RPSXServer:
             try:
                 client_socket, addr = self.server_socket.accept()
                 pl("connection from {}".format(str(addr)))
-                self.total_players += 1
+                self.total_players += 1 # statistics only
                 self.handle_connection(client_socket,addr)
             except (KeyboardInterrupt, SystemExit):
                 done = True
                 pl("caught interrupt")
-                self.quit()
+                self.tear_down()
             except:
                 pl("something bad happened")
                 done = True
-                self.quit()
+                self.tear_down()
                 raise
 
-    def quit(self):
+    def tear_down(self):
         pl("tearing down server")
-        self.goodbye()
+        self.close_all_client_sockets()
+      
+        pl("closing server socket")
         self.server_socket.close()
         self.server_socket = None
-        pl("closed socket")
+        
+        self.goodbye()
+
+    def close_all_client_sockets(self):
+        pl("closing all sockets")
+        for entry in self.players:
+            self.send_cmd(entry[2], Command.CLOSE)
+            sleep(0.05)
+            entry[2].close()
 
     def handle_connection(self,cs,addr):
         pl("handling connection with {}".format(str(addr)))
@@ -164,10 +177,14 @@ class RPSXServer:
         
         pl(str(self.players), len(self.players))
 
+        # We received player and set up our part correctly, send OK
+        self.send_cmd(cs,Command.OK)
+        
         # User speaks to server
         done = False
         while not done:
-            ans, done = self.recv_cmd(cs)
+            cmd = self.recv_cmd(cs)
+            ans, done = self.cmd_to_instructions(cmd)
             exec(ans)
 
         # User is done with this session
@@ -181,12 +198,16 @@ class RPSXServer:
         else:
             pl('setting up bot match...')
             match = RPSXGame(p,Player("Gunhilda",bot=True), Judge())
-        
+            self.send_cmd(cs,Command.OK)
+            sleep(0.01)
+            self.send_match_snapshot(cs,match.get_snapshot())
+            
     def recv_cmd(self,cs):
-        pl('waiting to recv...')
+        pl('waiting for command...')
         cmd = cs.recv(5)
-        cmd = str(cmd.decode('ascii'))
-        
+        return Command.decode(cmd)
+
+    def cmd_to_instructions(self,cmd):
         ans = 'self.unknown_cmd()'
         done = False
         # Is connection closed?
@@ -196,24 +217,34 @@ class RPSXServer:
             done = True
         # What was the command?
         else:
-            if cmd == 'q':
-                pl('recv: q was requested')
+            if cmd == Command.CLOSE:
+                pl('recv: CLOSE')
                 ans = ''
                 done = True
-            elif cmd == 'lfg':
-                pl('recv: lfg was requested')
+            elif cmd == Command.REQUEST_GAME:
+                pl('recv: REQUEST_GAME')
                 ans = 'self.handle_match_request(cs,p)'
             else:
-                pl('recv: unknown cmd')
+                pl('recv: unknown cmd: {}'.format(cmd))
                 ans = 'self.unknown_cmd()'
         return ans, done
 
+    def send_cmd(self,cs,cmd):
+        pl("send: '{}' to '{}'".format(cmd,str(cs)))
+        cs.send(cmd.encode('ascii'))
+    
     def has_players(self):
         return len(self.players) > 1
 
     def unknown_cmd(self):
         pass
-    
+
+    def send_match_snapshot(self,cs,snapshot):
+        cs.send(snapshot.encode('ascii'))
+        cmd = self.recv_cmd()
+        
+
+        
 if __name__ == '__main__':
     server = RPSXServer(socket.gethostname())
     server.run()
