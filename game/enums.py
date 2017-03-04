@@ -1,8 +1,8 @@
 from enum import Enum
 class Move(Enum):
-    ROCK = 0
-    PAPER = 1
-    SCISSORS = 2
+    ROCK = 10
+    PAPER = 20
+    SCISSORS = 30
 
     def __eq__(self,other):
         if self.__class__ is other.__class__:
@@ -10,7 +10,22 @@ class Move(Enum):
         elif other.__class__ == int:
             return self.value == other
         else:
-            return NotImplemented   
+            return NotImplemented
+
+    def encode(self, encoding = 'ascii'):
+        return str(self.value).encode(encoding)
+
+    def decode(encoded,encoding = 'ascii'):
+        if encoded == (Move.ROCK).encode(encoding):
+            return Move.ROCK
+        elif encoded == (Move.PAPER).encode(encoding):
+            return Move.PAPER
+        elif encoded == (Move.SCISSORS).encode(encoding):
+            return Move.SCISSORS
+        else:
+            print(encoded)
+            NotImplemented
+            
     
 class Outcome(Enum):
     WON = 0
@@ -31,6 +46,8 @@ class Command(Enum):
     REQUEST_GAME = 30
     REQUEST_MOVE = 40
     REQUEST_PLAYER = 50
+    REQUEST_SNAPSHOT = 60
+    MATCH_OVER = 70
     
     def __eq__(self,other):
         if self.__class__ is other.__class__:
@@ -40,11 +57,8 @@ class Command(Enum):
         else:
             return NotImplemented
         
-    def __str__(self):
-        return str(self.value)
-
     def encode(self,encoding = 'ascii'):
-        return str(self).encode(encoding)
+        return str(self.value).encode(encoding)
 
     # Decodes an encoded enum. This feels horrible.
     def decode(encoded, encoding = 'ascii'):
@@ -58,6 +72,8 @@ class Command(Enum):
             return Command.REQUEST_MOVE
         elif encoded == (Command.REQUEST_PLAYER).encode(encoding):
             return Command.REQUEST_PLAYER
+        elif encoded == (Command.REQUEST_SNAPSHOT).encode(encoding):
+            return Command.REQUEST_SNAPSHOT
         else:
             NotImplemented
             
