@@ -204,27 +204,44 @@ class RPSXServer:
             pl('setting up bot match...')
             match = RPSXGame(p,Player("Gunhilda",bot=True), Judge(),bot=True)
             self.send_cmd(cs,Command.OK)
-            cmd = self.recv_cmd(cs)
-            if not cmd == Command.REQUEST_SNAPSHOT:
-                pass #:(
 
-            self.send_cmd(cs,Command.OK)
-            sleep(0.01)
-            self.send_match_snapshot(cs,match.get_snapshot())
-
-            cmd = self.recv_cmd(cs)
-            if not cmd == Command.OK:
-                raise Exception("client is not OK with snapshot")
             pl('match set up')
             self.handle_bot_match(cs,match)
 
     def handle_bot_match(self,cs,match):
+        pl("Handling bot match")
         done = False
         while not done:
+            # Await a request for snapshot
+            pl("await snapshot")
+            cmd = self.recv_cmd(cs)
+            if not cmd == Command.REQUEST_SNAPSHOT:
+                pass #:(
+            # Send OK
+            pl("send ok")
+            self.send_cmd(cs,Command.OK)
+            sleep(0.01)
+            # Send snapshot
+            pl("send snapshot")
+            self.send_match_snapshot(cs,match.get_snapshot())
+            sleep(0.1)
+            #Receive OK
+            pl("receive OK")
+            cmd = self.recv_cmd(cs)
+            if not cmd == Command.OK:
+                raise Exception("client is not OK with snapshot")
+            sleep(1)
+            # Send Request move
+            pl("send move request")
             self.send_cmd(cs,Command.REQUEST_MOVE)
+            # Receive move
+            pl("receive move")
             p1_mov = self.recv_mov(cs)
             match.set_p1_move(p1_mov)
             match.play()
+            # Send OK
+            pl("send ok")
+            self.send_cmd(cs,Command.OK)
         
     def recv_cmd(self,cs):
         pl('waiting for command...')        

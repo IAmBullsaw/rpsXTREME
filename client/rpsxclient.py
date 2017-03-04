@@ -127,21 +127,28 @@ class RPSXClient:
         done = False
         while not done:
             pl("requesting snapshot")
-            # Get match snapshot
+            # Request snapshot
             self.send_cmd(Command.REQUEST_SNAPSHOT)        
 
+            # Receive OK
+            pl("waiting for ok")
             cmd = self.recv_cmd()
             if not cmd == Command.OK:
                 raise Exception("not OK :(") # :(
-        
+            # receive snapshot
+            pl("receiving snapshot")
             snapshot = self.recv_snapshot()
             sleep(0.01)
+            # Send OK
+            pl("send OK")
             self.send_cmd(Command.OK)
 
             # Show snapshot to user
+            pl("show snapshot")
             self.gfx.show_snapshot(snapshot)
             
             # Await Move request
+            pl("receive move request")
             cmd = self.recv_cmd()
             if not cmd == Command.REQUEST_MOVE:
                 raise Exception("Server didn't request move")
@@ -150,10 +157,14 @@ class RPSXClient:
                 pl("recv: connection closed unexpectedly")
                 done = True
             elif cmd == Command.REQUEST_MOVE:
+                pl("got move request")
                 # Get move from player
                 pass
                 # Send move to server
+                pl("sending rock move")
                 self.send_mov(Move.ROCK)
+                # Receive OK
+                pl("receiving ok")
                 cmd = self.recv_cmd()
                 if not cmd == Command.OK:
                     raise Exception("Server didn't get I chose rock")

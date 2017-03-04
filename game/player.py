@@ -94,6 +94,11 @@ class Player:
 
     def unpack_from_string(self,string):
         self.name,self.rocks,self.papers,self.scissors,self.points,self.wins = string.split('|')
+        self.rocks = int(self.rocks)
+        self.papers = int(self.papers)
+        self.scissors = int(self.scissors)
+        self.points = int(self.points)
+        self.wins = int(self.wins)
 
     def __repr__(self):
         return "<player " + self.pack_to_string() +'>'
