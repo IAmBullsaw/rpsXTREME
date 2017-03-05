@@ -6,6 +6,8 @@ I had this Idea some time ago where one simple change of rules to Rock Paper Sci
 
 So, for a tournament it is possible that the finale would end due to loss of possible moves.
 
+In short I have here made a mock up in python 3 of the game, a client and server for a network based tournament.
+
 ## Rules and definitions
 
 * A turn is one standard game of rock paper scissors.
@@ -33,17 +35,33 @@ Alternative rules has been discussed en masse, some of them reaches this list
 What first seemed to be a stupid idea evolved even further.
 I have a raspberry pi and figured I should make this game into some online rpsxtreme game, because rpsXtreme is super fun.
 
-Idea: The server is responsible for matching 2 users and let them play a match. then they can request to play one more with another random user.
+The main idea is that the server is responsible for matching 2 users, using the client,  and let them play one match. Matches are run on the server, not with the client. When a match is over, the users can request to play one more with another random user.
 
-connection protocol:
-client:
-´´´
-connect
-send player data
-recv match connected and who to battle
-match_continues = True
-while match_continues:
-    send turn move
-    recv turn outcome and stats and recvd_match_continues
-    match_continues = recvd_match_continues
-´´´
+Both client and server make use of python's socket module.
+
+## Client
+
+I have been thinking of implementing a graphical user interface to be used instead of a terminal. But right now, I focus on a client for use in a terminal. First things first, you know?
+
+Where it's at now:
+
+* Client connects to server.
+* Client requests a match.
+* Client receives snapshots of the match.
+* Client answers to Move requests from server.
+
+No user input is handled yet. However the client has a rock solid plan: Only play rock...
+
+## Server
+
+Where it's at now:
+
+* Server opens socket for everyone. Everyone.
+* Server connects with client.
+* Server responds to match request and starts a new bot match.
+* Server sends snapshots of the match to correct client.
+* Server can send snapshots of up to 9 turns before client crashes and that crash crashes the server. But it's OK, we don't need more than 5 turns :D (Crash occurs sincesend-limit is exceeded)
+
+# Known bugs
+
+* It's literally unplayable.
