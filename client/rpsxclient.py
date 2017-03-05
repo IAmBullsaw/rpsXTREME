@@ -169,7 +169,7 @@ class RPSXClient:
                 if not cmd == Command.OK:
                     raise Exception("Server didn't get I chose rock")
             elif cmd == Command.MATCH_OVER:
-                pass
+                
             else:
                 pl("recv: unknown command: {}".format(cmd))
                 ans = 'raise Exception("Unknown command received")'

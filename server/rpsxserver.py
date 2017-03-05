@@ -204,7 +204,7 @@ class RPSXServer:
             pl('setting up bot match...')
             match = RPSXGame(p,Player("Gunhilda",bot=True), Judge(),bot=True)
             self.send_cmd(cs,Command.OK)
-
+            
             pl('match set up')
             self.handle_bot_match(cs,match)
 
@@ -237,12 +237,14 @@ class RPSXServer:
             # Receive move
             pl("receive move")
             p1_mov = self.recv_mov(cs)
-            match.set_p1_move(p1_mov)
-            match.play()
+            
             # Send OK
             pl("send ok")
             self.send_cmd(cs,Command.OK)
-        
+            
+            match.set_p1_move(p1_mov)
+            match.play()
+            
     def recv_cmd(self,cs):
         pl('waiting for command...')        
         cmd = cs.recv(10)

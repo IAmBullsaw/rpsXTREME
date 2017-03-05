@@ -39,12 +39,13 @@ class RPSXGame:
                                  self.p2.pack_to_string(),
                                  self.stats.pack_to_string())
     def play(self):
-        pl("Playing {} against {}".format(self.p1_move,self.p2_move))
 
         if self.bot_match:
             self.p2_move = self.p2.get_chosen_move()
         
-        if not self.p1_move or not self.p2_move:
+        pl("Playing {} against {}".format(self.p1_move,self.p2_move))
+
+        if self.p1_move == None or self.p2_move == None:
             raise Exception("All moves arent set")
 
         self.judge.on_start_of_match(self.p1, self.p2)
@@ -69,21 +70,21 @@ class RPSXGame:
     def get_winner(self):
         return self.winner
         
-if __name__ == '__main__':
-    print("Testing game")
-    p1 = Player('p1')
-    p2 = Player('p2')
-    match = RPSXGame(p1,p2,Judge())
-    match.set_p1_move(Move.ROCK)
-    match.set_p2_move(Move.PAPER)
-    match.play() # P2 should win
-    score = match.get_snapshot().split('\\')[2]
-    pl("p2 wins: " + score[1] == '1')
-    match.set_p1_move(Move.ROCK)
-    match.set_p2_move(Move.ROCK)
-    match.play() # Should be a tie
-    score = match.get_snapshot().split('\\')[2]
-    pl("'twas a tie: " + score[4] == '0')
-    match.finish()
-    winner = match.get_winner()
-    pl("Winner is: {}".format(winner))
+    def test():
+        print("Testing game")
+        p1 = Player('p1')
+        p2 = Player('p2')
+        match = RPSXGame(p1,p2,Judge())
+        match.set_p1_move(Move.ROCK)
+        match.set_p2_move(Move.PAPER)
+        match.play() # P2 should win
+        score = match.get_snapshot().split('\\')[2]
+        pl("p2 wins: " + score[1] == '1')
+        match.set_p1_move(Move.ROCK)
+        match.set_p2_move(Move.ROCK)
+        match.play() # Should be a tie
+        score = match.get_snapshot().split('\\')[2]
+        pl("'twas a tie: " + score[4] == '0')
+        match.finish()
+        winner = match.get_winner()
+        pl("Winner is: {}".format(winner))

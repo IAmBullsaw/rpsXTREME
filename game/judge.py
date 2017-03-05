@@ -34,7 +34,6 @@ class Judge:
     def on_start_of_match(self,p1,p2):
         pass
         
-        
     def determine_match_fallout(self,winner,loser,winner_move,loser_move):
         winner.gain_move(loser_move)
         loser.lose_move(loser_move)
