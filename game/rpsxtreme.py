@@ -25,9 +25,11 @@ class RPSXGame:
         self.bot_match = bot
         
     def set_p1_move(self,move):
+        move = Move.to_enum(move)
         self.p1_move = move
 
     def set_p2_move(self,move):
+        move = Move.to_enum(move)
         self.p2_move = move
 
     def reset_moves(self):
@@ -38,6 +40,7 @@ class RPSXGame:
         return "{}:{}:{}".format(self.p1.pack_to_string(),
                                  self.p2.pack_to_string(),
                                  self.stats.pack_to_string())
+
     def play(self):
 
         if self.bot_match:
@@ -55,7 +58,10 @@ class RPSXGame:
                                                                                     self.p2_move)
         if (winner != None):
             self.stats.register_score(winner.get_name())
-            self.judge.determine_match_fallout(winner, loser, winner_move, loser_move)
+            self.judge.determine_match_fallout(winner,
+                                               loser,
+                                               winner_move,
+                                               loser_move)
         else:
             self.stats.register_score(None)
             self.judge.determine_draw_fallout(self.p1,

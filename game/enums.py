@@ -15,7 +15,7 @@ class Move(Enum):
     def encode(self, encoding = 'ascii'):
         return str(self.value).encode(encoding)
 
-    def decode(encoded,encoding = 'ascii'):
+    def decode(encoded, encoding = 'ascii'):
         if encoded == (Move.ROCK).encode(encoding):
             return Move.ROCK
         elif encoded == (Move.PAPER).encode(encoding):
@@ -25,6 +25,16 @@ class Move(Enum):
         else:
             print(encoded)
             NotImplemented
+
+    def to_enum(number):
+        if number == 10:
+            return Move.ROCK
+        elif number == 20:
+            return Move.PAPER
+        elif number == 30:
+            return Move.SCISSORS
+        else:
+            return None
             
     
 class Outcome(Enum):

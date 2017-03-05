@@ -2,6 +2,7 @@ from random import randint
 from enums import Move, Outcome
 
 class Judge:
+    
     def __init__(self):
         self.bribed = (False,None)
         
