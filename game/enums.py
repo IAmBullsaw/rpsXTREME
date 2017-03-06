@@ -84,6 +84,8 @@ class Command(Enum):
             return Command.REQUEST_PLAYER
         elif encoded == (Command.REQUEST_SNAPSHOT).encode(encoding):
             return Command.REQUEST_SNAPSHOT
+        elif encoded == (Command.MATCH_OVER).encode(encoding):
+            return Command.MATCH_OVER
         else:
             NotImplemented
             

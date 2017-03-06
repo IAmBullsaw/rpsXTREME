@@ -36,7 +36,7 @@ def pdot():
 
 class RPSXServer:
 
-    def __init__(self,host,port = 4711, connections = 5):
+    def __init__(self,host,port = 4711, connections = 5, turns_per_match = 5):
         self.server_socket = None
         self.host = host
         self.port = port
@@ -46,6 +46,7 @@ class RPSXServer:
         self.muid = 0
         self.start_time = None
         self.total_players = 0
+        self.turns_per_match = turns_per_match
         
         ok = self.setup_server()
         if not ok:
@@ -212,39 +213,109 @@ class RPSXServer:
         pl("Handling bot match")
         done = False
         while not done:
-            # Await a request for snapshot
-            pl("await snapshot")
+            pl("Waiting for question")
+            
             cmd = self.recv_cmd(cs)
-            if not cmd == Command.REQUEST_SNAPSHOT:
-                pass #:(
-            # Send OK
-            pl("send ok")
-            self.send_cmd(cs,Command.OK)
-            sleep(0.01)
-            # Send snapshot
-            pl("send snapshot")
-            self.send_match_snapshot(cs,match.get_snapshot())
-            sleep(0.1)
-            #Receive OK
-            pl("receive OK")
-            cmd = self.recv_cmd(cs)
-            if not cmd == Command.OK:
-                raise Exception("client is not OK with snapshot")
-            sleep(1)
-            # Send Request move
-            pl("send move request")
-            self.send_cmd(cs,Command.REQUEST_MOVE)
-            # Receive move
-            pl("receive move")
-            p1_mov = self.recv_mov(cs)
+            if not cmd == Command.MATCH_OVER:
+                raise Exception("Client should wonder if match is over")
+            else:
+                if match.get_turns() >= self.turns_per_match:
+                    # We are done with match
+                    done = True
+                else:
+                    # We continue with match
+                    self.send_cmd(cs, Command.OK)
+                    self.play_turn(cs,match)
+        # When done
+        
+        pl("Server is ending match")
+        pl("send: Command.MATCH_OVER")
+        self.send_cmd(cs, Command.MATCH_OVER)
+        self.handle_end_match(cs,match)
+        pl("Bot match ended")
+                    
+                
+    def play_turn(self,cs,match):
+        """
+         Await a request for snapshot
+         Send OK
+         Send snapshot
+         Receive OK
+         Send Request move
+         Receive move
+         Send OK
+        """
+        pl("await snapshot")
+        cmd = self.recv_cmd(cs)
+        if not cmd == Command.REQUEST_SNAPSHOT:
+            pass #:(
+        # Send OK
+        pl("send ok")
+        self.send_cmd(cs,Command.OK)
+        sleep(0.01)
+        # Send snapshot
+        pl("send snapshot")
+        self.send_match_snapshot(cs,match.get_snapshot())
+        sleep(0.1)
+        #Receive OK
+        pl("receive OK")
+        cmd = self.recv_cmd(cs)
+        if not cmd == Command.OK:
+            raise Exception("client is not OK with snapshot")
+        sleep(1)
+        # Send Request move
+        pl("send move request")
+        self.send_cmd(cs,Command.REQUEST_MOVE)
+        # Receive move
+        pl("receive move")
+        p1_mov = self.recv_mov(cs)
+        
+        # Send OK
+        pl("send ok")
+        self.send_cmd(cs,Command.OK)
+
+        # play the turn
+        match.set_p1_move(p1_mov)
+        match.play()
             
-            # Send OK
-            pl("send ok")
-            self.send_cmd(cs,Command.OK)
-            
-            match.set_p1_move(p1_mov)
-            match.play()
-            
+
+    def handle_end_match(self,cs,match):
+        """
+         recv OK
+         send snapshot
+         recv OK
+         send final snapshot
+         
+        """
+
+        # Did client get message?
+        pl("receive OK")
+        cmd = self.recv_cmd(cs)
+        if not cmd == Command.OK:
+            raise Exception("client did not get Command.MATCH_OVER")
+
+        # Send snapshot
+        self.send_match_snapshot(cs,match.get_snapshot())
+
+        # Did client get snapshot?
+        pl("receive OK")
+        cmd = self.recv_cmd(cs)
+        if not cmd == Command.OK:
+            raise Exception("client is not OK with final snapshot")
+
+        # Finish the match
+        match.finish()
+
+        # Send final snapshot (Winner)
+        self.send_final_snapshot(cs,match.get_winner().pack_to_string())
+
+        # Did client get winner?
+        pl("receive OK")
+        cmd = self.recv_cmd(cs)
+        if not cmd == Command.OK:
+            raise Exception("client is not OK with final snapshot")
+        
+                    
     def recv_cmd(self,cs):
         pl('waiting for command...')        
         cmd = cs.recv(10)
@@ -284,7 +355,16 @@ class RPSXServer:
     def send_cmd(self,cs,cmd):
         pl("send: '{}' to '{}'".format(cmd,str(cs.getpeername())))
         cs.send(cmd.encode('ascii'))
-    
+
+    def cmd_transaction(self,cs,send_cmd,ans_cmd = Command.OK):
+        pl("Transaction: send {} recv{}".format(send_cmd,ans_cmd))
+        self.send_cmd(send_cmd)
+        cmd = self.recv_cmd(cs)
+        if not cmd or cmd == '':
+            pl("Transaction failed. Connection closed unexpectedly")
+        if not cmd == ans_cmd:
+            raise Exception("Transaction failed. Expected {} received {}".format(send_cmd,ans_cmd))
+        
     def has_players(self):
         return len(self.players) > 1
 
@@ -295,6 +375,9 @@ class RPSXServer:
         pl("sending snapshot...")
         cs.send(snapshot.encode('ascii'))
 
+    def send_final_snapshot(self,cs,snapshot):
+        pl("sending final snapshot")
+        cs.send(snapshot.encode('ascii'))
         
 if __name__ == '__main__':
     server = RPSXServer(socket.gethostname())

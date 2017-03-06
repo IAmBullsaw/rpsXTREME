@@ -94,6 +94,30 @@ class RPSXClient:
         ans = self.sock.recv(100)
         return ans.decode('ascii')
 
+    def snapshot_transaction(self,ans_cmd = Command.OK):
+        snapshot = self.recv_snapshot()
+        self.send_cmd(ans_cmd)
+        return snapshot
+    
+
+    def cmd_transaction(self,send_cmd,ans_cmd = Command.OK):
+        pl("Transaction: send {} recv{}".format(send_cmd,ans_cmd))
+        self.send_cmd(send_cmd)
+        cmd = self.recv_cmd()
+        if not cmd or cmd == '':
+            pl("Transaction failed. Connection closed unexpectedly")
+        if not cmd == ans_cmd:
+            raise Exception("Transaction failed. Expected {} received {}".format(send_cmd,ans_cmd))
+        
+    def mov_transaction(self,send_mov, ans_cmd = Command.OK):
+        pl("Transaction: send {} recv{}".format(send_mov,ans_cmd))
+        self.send_mov(send_mov)
+        cmd = self.recv_cmd()
+        if not cmd or cmd == '':
+            pl("Transaction failed. Connection closed unexpectedly")
+        if not cmd == ans_cmd:
+            raise Exception("Transaction failed. Expected {} received {}".format(send_cmd,ans_cmd))
+
     def play(self):
         """
         1. send: request game
@@ -111,69 +135,95 @@ class RPSXClient:
         """
         pl("requesting game...")
 
-        self.send_cmd(Command.REQUEST_GAME)
-
-        cmd = self.recv_cmd()
-        if not cmd == Command.OK:
-            raise Exception("not OK :(") # :(
-
+        self.cmd_transaction(Command.REQUEST_GAME)
         # Main game loop
         self.main_game_loop()
-
-        self.send_cmd(Command.CLOSE)
+        # Loop done, match over.
         self.tear_down()
 
+
+    def play_turn(self):
+        """
+         Request snapshot
+         Receive OK
+         receive snapshot
+         Send OK
+         recv Move request
+         Send move to server
+         Receive OK
+        """
+        # Request snapshot
+        self.cmd_transaction(Command.REQUEST_SNAPSHOT)
+        
+        # receive snapshot
+        snapshot = self.snapshot_transaction()
+        
+        # Show snapshot to user
+        self.gfx.show_snapshot(snapshot)
+        
+        # Await Move request
+        pl("recv request from server. Move?")
+        
+        cmd = self.recv_cmd()
+        if not cmd == Command.REQUEST_MOVE:
+            raise Exception("Server didn't request move")
+        elif not cmd or cmd == '':
+            pl("recv: connection closed unexpectedly")
+            done = True
+        elif cmd == Command.REQUEST_MOVE:
+            pl("got move request")
+            # Get move from player
+            pass
+        else:
+            raise Exception("Client did not understand server request")
+        # Send move to server
+        self.mov_transaction(Move.ROCK)
+        
+
+    def end_match(self):
+        """
+         send OK
+         recv snapshot
+         send OK
+         recv final snapshot
+         send OK
+        """        
+        pl("Ending match")
+        pl("sending OK")
+        self.send_cmd(Command.OK)
+        pl("Receive snapshot")
+        snapshot = self.recv_snapshot()
+        pl("sending OK")
+        self.send_cmd(Command.OK)
+        pl("show snapshot")
+        self.gfx.show_snapshot(snapshot)
+        pl("Recv final snapshot")
+        winner = self.recv_final_snapshot()
+        self.send_cmd(Command.OK)
+        self.gfx.show_player_won(winner)
+        pl("Client ended match")
+
+    def recv_final_snapshot(self):
+        msg = self.sock.recv(1024)
+        msg = msg.decode('ascii')
+        winner = Player("client")
+        winner.unpack_from_string(msg)
+        return winner
+            
     def main_game_loop(self):
         done = False
         while not done:
-            pl("requesting snapshot")
-            # Request snapshot
-            self.send_cmd(Command.REQUEST_SNAPSHOT)        
-
-            # Receive OK
-            pl("waiting for ok")
+            # Check to see if we are game
+            # Or if we are done with the match
+            self.send_cmd(Command.MATCH_OVER)
             cmd = self.recv_cmd()
-            if not cmd == Command.OK:
-                raise Exception("not OK :(") # :(
-            # receive snapshot
-            pl("receiving snapshot")
-            snapshot = self.recv_snapshot()
-            sleep(0.01)
-            # Send OK
-            pl("send OK")
-            self.send_cmd(Command.OK)
-
-            # Show snapshot to user
-            pl("show snapshot")
-            self.gfx.show_snapshot(snapshot)
-            
-            # Await Move request
-            pl("receive move request")
-            cmd = self.recv_cmd()
-            if not cmd == Command.REQUEST_MOVE:
-                raise Exception("Server didn't request move")
-            
-            if not cmd or cmd == '':
-                pl("recv: connection closed unexpectedly")
+            if cmd == Command.MATCH_OVER:
                 done = True
-            elif cmd == Command.REQUEST_MOVE:
-                pl("got move request")
-                # Get move from player
-                pass
-                # Send move to server
-                pl("sending rock move")
-                self.send_mov(Move.ROCK)
-                # Receive OK
-                pl("receiving ok")
-                cmd = self.recv_cmd()
-                if not cmd == Command.OK:
-                    raise Exception("Server didn't get I chose rock")
-            elif cmd == Command.MATCH_OVER:
-                pass
+                self.end_match()
+            elif cmd == Command.OK:
+                self.play_turn()
             else:
-                pl("recv: unknown command: {}".format(cmd))
-                ans = 'raise Exception("Unknown command received")'
-                done = True
+                raise Exception("Server is drunk.")
             
     def setup(self):
         pl("setting up client...")

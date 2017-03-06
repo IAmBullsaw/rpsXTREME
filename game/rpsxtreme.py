@@ -23,6 +23,10 @@ class RPSXGame:
         self.stats = Statistics(p1,p2)
         self.winner = None
         self.bot_match = bot
+        self.turns = 0
+
+    def get_turns(self):
+        return self.turns
         
     def set_p1_move(self,move):
         move = Move.to_enum(move)
@@ -41,8 +45,11 @@ class RPSXGame:
                                  self.p2.pack_to_string(),
                                  self.stats.pack_to_string())
 
-    def play(self):
+    def get_final_snapshot(self):
+        return "{}".format(self.winner.pack_to_string())
 
+    def play(self):
+        self.turns += 1
         if self.bot_match:
             self.p2_move = self.p2.get_chosen_move()
         
