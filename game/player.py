@@ -3,7 +3,7 @@ from enums import Move
 
 class Player:
     def __init__(self, name = None, bot = False):
-        self.name = name + self.get_power_name()
+        self.name = name.capitalize() + self.get_power_name()
         self.rocks = 1
         self.papers = 1 
         self.scissors = 1
@@ -12,7 +12,7 @@ class Player:
         self.bot = bot
 
     def get_power_name(self):
-        l = ["the Defiler","the Crusher of Hands","of Doom","the Hand Magician"]
+        l = ["the Defiler","the Crusher of Hands","of Doom","the Hand Magician", "the Rock", "the Paperbag King", "Scissorhands"]
         return " " + l[randint(0, len(l)-1)]
         
     def lose_move(self, move):
@@ -113,6 +113,11 @@ class Player:
 
     def __repr__(self):
         return "<player " + self.pack_to_string() +'>'
+
+    def reset_moves(self):
+        self.rocks = 1
+        self.scissors = 1
+        self.papers = 1
 
 #######
 # Tests

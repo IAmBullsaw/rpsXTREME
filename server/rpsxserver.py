@@ -123,6 +123,11 @@ class RPSXServer:
     def recv_move(self,cs):
         msg = cs.recv(1024)
         pl(msg.decode('ascii'))
+        cmd = Command.decode(cmd)
+        if cmd and cmd == Command.MATCH_OVER:
+            return None
+        else:
+            return Move.decode(msg)        
 
     def create_unique_id(self):
         uid = self.uid
@@ -213,6 +218,7 @@ class RPSXServer:
     def handle_bot_match(self,cs,match,p2):
         pl("Handling bot match")
         done = False
+        moves_left = True
         while not done:
             pl("Waiting for question")
             
@@ -220,13 +226,13 @@ class RPSXServer:
             if not cmd == Command.MATCH_OVER:
                 raise Exception("Client should wonder if match is over")
             else:
-                if match.get_turns() >= self.turns_per_match:
+                if match.get_turns() >= self.turns_per_match or not moves_left:
                     # We are done with match
                     done = True
                 else:
                     # We continue with match
                     self.send_cmd(cs, Command.OK)
-                    self.play_turn(cs,match,p2)
+                    moves_left = self.play_turn(cs,match,p2)
         # When done
         
         pl("Server is ending match")
@@ -263,25 +269,33 @@ class RPSXServer:
         cmd = self.recv_cmd(cs)
         if not cmd == Command.OK:
             raise Exception("client is not OK with snapshot")
-        sleep(1)
+#        sleep(0.5)
         # Send Request move
         pl("send move request")
         self.send_cmd(cs,Command.REQUEST_MOVE)
         # Receive move
         pl("receive move")
         p1_mov = self.recv_mov(cs)
-        
         # Send OK
         pl("send ok")
         self.send_cmd(cs,Command.OK)
 
-        # Get bot move:
-        #p2_mov = p2.get_chosen_move()
-        #if p2move:
-        #    match.set_p2move(p2_mov)
-        # play the turn
-        match.set_p1_move(p1_mov)
-        match.play()
+        if p1_mov:
+            
+            # Get bot move:
+            p2_mov = p2.get_chosen_move()
+            if p2_mov:
+                # Have both p1_mov and p2_mov
+                match.set_p2_move(p2_mov)
+                match.set_p1_move(p1_mov)
+                match.play()
+
+                # moves_left = return
+                return True
+            else:
+                return False
+        else:
+            return False
             
 
     def handle_end_match(self,cs,match):

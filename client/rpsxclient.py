@@ -133,14 +133,22 @@ class RPSXClient:
         7. recv: turn outcome / match outcome
         
         """
-        pl("requesting game...")
-
-        self.cmd_transaction(Command.REQUEST_GAME)
-        # Main game loop
-        self.main_game_loop()
-        # Loop done, match over.
-        self.tear_down()
-
+        while True:
+            ans = input('Want to play a match?')
+            if not ans in ['no','n','q','quit','exit']:
+                pl("I'll take that as a \"Yes please!\".")
+                pl("requesting game...")
+                print(self.player.has_moves_left())
+                if not self.player.has_moves_left():
+                    self.player.reset_moves()
+                
+                self.cmd_transaction(Command.REQUEST_GAME)
+                # Main game loop
+                self.main_game_loop()
+                # Loop done, match over.
+            else:
+                self.tear_down()
+        
 
     def play_turn(self):
         """
@@ -178,8 +186,7 @@ class RPSXClient:
                 self.mov_transaction(move)
             else:
                 # No moves left, match over!
-                self.cmd_transaction(Command.MATCH_OVER)
-            
+                self.cmd_transaction(Command.MATCH_OVER)    
         else:
             raise Exception("Client did not understand server request")
         sleep(0.1)
@@ -206,6 +213,7 @@ class RPSXClient:
         self.send_cmd(Command.OK)
         pl("Receive snapshot")
         snapshot = self.recv_snapshot()
+        self.update_player(snapshot)
         pl("sending OK")
         self.send_cmd(Command.OK)
         pl("show snapshot")
@@ -252,7 +260,7 @@ class RPSXClient:
             raise Exception("Server didn't respond with OK on connect")
         
 if __name__ == '__main__':
-    p = Player("client")
+    p = Player(input('Welcome!\nWhat is your name?: '))
     cli = RPSXClient(host=socket.gethostname(),player = p)
     cli.setup()
     try:

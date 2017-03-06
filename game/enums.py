@@ -23,8 +23,7 @@ class Move(Enum):
         elif encoded == (Move.SCISSORS).encode(encoding):
             return Move.SCISSORS
         else:
-            print(encoded)
-            NotImplemented
+            return None
 
     def to_enum(number):
         if number == 10 or number == 0:
@@ -73,5 +72,5 @@ class Command(Enum):
         elif encoded == (Command.MATCH_OVER).encode(encoding):
             return Command.MATCH_OVER
         else:
-            NotImplemented
+            return None
             
