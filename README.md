@@ -49,8 +49,7 @@ Where it's at now:
 * Client requests a match.
 * Client receives snapshots of the match.
 * Client answers to Move requests from server.
-
-No user input is handled yet. However the client has a rock solid plan: Only play rock...
+* Client now asks for user input.
 
 ## Server
 
@@ -61,7 +60,8 @@ Where it's at now:
 * Server responds to match request and starts a new bot match.
 * Server sends snapshots of the match to correct client.
 * Server can send snapshots of up to 9 turns before client crashes and that crash crashes the server. But it's OK, we don't need more than 5 turns :D (Crash occurs sincesend-limit is exceeded)
+* Server can now handle the client!
 
 # Known bugs
 
-* It's literally unplayable.
+* The server can be set in an inifite loop if you play really really good and empty the bots chocies.
