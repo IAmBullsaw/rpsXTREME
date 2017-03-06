@@ -160,7 +160,7 @@ class RPSXClient:
         
         # Show snapshot to user
         self.gfx.show_snapshot(snapshot)
-        
+        self.update_player(snapshot)
         # Await Move request
         pl("recv request from server. Move?")
         
@@ -169,16 +169,28 @@ class RPSXClient:
             raise Exception("Server didn't request move")
         elif not cmd or cmd == '':
             pl("recv: connection closed unexpectedly")
-            done = True
         elif cmd == Command.REQUEST_MOVE:
             pl("got move request")
             # Get move from player
-            pass
+            move = self.player.get_chosen_move()
+            # Send move to server
+            if move:
+                self.mov_transaction(move)
+            else:
+                # No moves left, match over!
+                self.cmd_transaction(Command.MATCH_OVER)
+            
         else:
             raise Exception("Client did not understand server request")
-        # Send move to server
-        self.mov_transaction(Move.ROCK)
         sleep(0.1)
+
+    def update_player(self,snapshot):
+        p1,p2,_ = snapshot.split(':')
+        name,_,_,_,_,_ = p1.split('|')
+        if name == self.player.get_name():
+            self.player.unpack_from_string(p1)
+        else:
+            self.player.unpack_from_string(p2)
         
 
     def end_match(self):
@@ -245,6 +257,7 @@ if __name__ == '__main__':
     cli.setup()
     try:
         cli.play()
+        
     except KeyboardInterrupt:
         pl("received interrupt")
         cli.tear_down()

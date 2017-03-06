@@ -63,18 +63,24 @@ class Player:
             return self.scissors > 0
 
     def get_chosen_move(self):
-        choice = -1
+        choice = None
+
+        if not self.has_moves_left():
+            return choice
+        
         done = False
         if not self.bot:
+            self.print_moves()
             while not done:
                 choice = input('What is your move?: ')
                 if choice in ['q','quit','exit']:
                     done = True
-                    choice = -1
+                    choice = None
                 if choice in '123':
                     choice = int(choice)
                     choice -= 1 # minus one since choices do not begin with 0
                     choice = choice % 3
+                    choice = Move.to_enum(choice)
                     if self.can_choose_move(choice):
                         done = True
         else:
@@ -101,6 +107,9 @@ class Player:
         self.scissors = int(self.scissors)
         self.points = int(self.points)
         self.wins = int(self.wins)
+
+    def print_moves(self):
+        print("1. {}\n2.{}\n3.{}".format(self.rocks,self.papers,self.scissors))
 
     def __repr__(self):
         return "<player " + self.pack_to_string() +'>'

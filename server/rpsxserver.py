@@ -203,13 +203,14 @@ class RPSXServer:
             raise Exception(NotImplemented)
         else:
             pl('setting up bot match...')
-            match = RPSXGame(p,Player("Gunhilda",bot=True), Judge(),bot=True)
+            p2 = Player("Gunhilda",bot=True)
+            match = RPSXGame(p, p2, Judge(), bot=True)
             self.send_cmd(cs,Command.OK)
             
             pl('match set up')
-            self.handle_bot_match(cs,match)
+            self.handle_bot_match(cs,match,p2)
 
-    def handle_bot_match(self,cs,match):
+    def handle_bot_match(self,cs,match,p2):
         pl("Handling bot match")
         done = False
         while not done:
@@ -225,7 +226,7 @@ class RPSXServer:
                 else:
                     # We continue with match
                     self.send_cmd(cs, Command.OK)
-                    self.play_turn(cs,match)
+                    self.play_turn(cs,match,p2)
         # When done
         
         pl("Server is ending match")
@@ -235,7 +236,7 @@ class RPSXServer:
         pl("Bot match ended")
                     
                 
-    def play_turn(self,cs,match):
+    def play_turn(self,cs,match,p2):
         """
          Await a request for snapshot
          Send OK
@@ -274,6 +275,10 @@ class RPSXServer:
         pl("send ok")
         self.send_cmd(cs,Command.OK)
 
+        # Get bot move:
+        #p2_mov = p2.get_chosen_move()
+        #if p2move:
+        #    match.set_p2move(p2_mov)
         # play the turn
         match.set_p1_move(p1_mov)
         match.play()
