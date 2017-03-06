@@ -307,7 +307,11 @@ class RPSXServer:
         match.finish()
 
         # Send final snapshot (Winner)
-        self.send_final_snapshot(cs,match.get_winner().pack_to_string())
+        winner = match.get_winner()
+        if winner:
+            self.send_final_snapshot(cs,winner.pack_to_string())
+        else:
+            self.send_final_snapshot(cs,'DRAW')
 
         # Did client get winner?
         pl("receive OK")

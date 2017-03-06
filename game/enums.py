@@ -27,28 +27,14 @@ class Move(Enum):
             NotImplemented
 
     def to_enum(number):
-        if number == 10:
+        if number == 10 or number == 0:
             return Move.ROCK
-        elif number == 20:
+        elif number == 20 or number == 1:
             return Move.PAPER
-        elif number == 30:
+        elif number == 30 or number == 2:
             return Move.SCISSORS
         else:
             return None
-            
-    
-class Outcome(Enum):
-    WON = 0
-    DRAW = 1
-    LOST = 2
-
-    def __eq__(self,other):
-        if self.__class__ is other.__class__:
-            return self.value == other.value
-        elif other.__class__ == int:
-            return self.value == other
-        else:
-            return NotImplemented
 
 class Command(Enum):
     CLOSE = 10

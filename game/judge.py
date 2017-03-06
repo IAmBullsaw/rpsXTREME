@@ -1,5 +1,5 @@
 from random import randint
-from enums import Move, Outcome
+from enums import Move
 
 class Judge:
     

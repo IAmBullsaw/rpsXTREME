@@ -178,6 +178,7 @@ class RPSXClient:
             raise Exception("Client did not understand server request")
         # Send move to server
         self.mov_transaction(Move.ROCK)
+        sleep(0.1)
         
 
     def end_match(self):
@@ -198,16 +199,21 @@ class RPSXClient:
         pl("show snapshot")
         self.gfx.show_snapshot(snapshot)
         pl("Recv final snapshot")
-        winner = self.recv_final_snapshot()
+        winner = self.recv_final_snapshot()        
         self.send_cmd(Command.OK)
-        self.gfx.show_player_won(winner)
+        if winner:
+            self.gfx.show_player_won(winner)
+        else:
+            self.gfx.show_draw()
         pl("Client ended match")
 
     def recv_final_snapshot(self):
         msg = self.sock.recv(1024)
         msg = msg.decode('ascii')
-        winner = Player("client")
-        winner.unpack_from_string(msg)
+        winner = None
+        if not msg == 'DRAW':
+            winner = Player("client")
+            winner.unpack_from_string(msg)
         return winner
             
     def main_game_loop(self):

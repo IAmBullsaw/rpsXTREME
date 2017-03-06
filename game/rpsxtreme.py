@@ -51,6 +51,7 @@ class RPSXGame:
     def play(self):
         self.turns += 1
         if self.bot_match:
+            pl("p2 chosing move...")
             self.p2_move = self.p2.get_chosen_move()
         
         pl("Playing {} against {}".format(self.p1_move,self.p2_move))
@@ -83,21 +84,27 @@ class RPSXGame:
     def get_winner(self):
         return self.winner
         
-    def test():
-        print("Testing game")
-        p1 = Player('p1')
-        p2 = Player('p2')
-        match = RPSXGame(p1,p2,Judge())
-        match.set_p1_move(Move.ROCK)
-        match.set_p2_move(Move.PAPER)
-        match.play() # P2 should win
-        score = match.get_snapshot().split('\\')[2]
-        pl("p2 wins: " + score[1] == '1')
-        match.set_p1_move(Move.ROCK)
-        match.set_p2_move(Move.ROCK)
-        match.play() # Should be a tie
-        score = match.get_snapshot().split('\\')[2]
-        pl("'twas a tie: " + score[4] == '0')
-        match.finish()
-        winner = match.get_winner()
-        pl("Winner is: {}".format(winner))
+def test():
+    print("Testing game")
+    print("0 = draw, -1 = p1 won, +1 = p2 won")
+    p1 = Player('p1')
+    p2 = Player('p2')
+    match = RPSXGame(p1,p2,Judge())
+    match.set_p1_move(Move.ROCK)
+    match.set_p2_move(Move.PAPER)
+    match.play() # P2 should win
+    score = match.get_snapshot().split(':')[2]
+    pl(score)
+    match.set_p1_move(Move.ROCK)
+    match.set_p2_move(Move.ROCK)
+    match.play() # Should be a tie
+    score = match.get_snapshot().split(':')[2]
+    pl(score)
+    match.set_p1_move(Move.ROCK)
+    match.set_p2_move(Move.SCISSORS)
+    match.play() # P1 should win
+    score = match.get_snapshot().split(':')[2]
+    pl(score)
+    match.finish()
+    winner = match.get_winner()
+    pl("Winner is: {}".format(winner))

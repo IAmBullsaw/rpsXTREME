@@ -80,6 +80,8 @@ class Player:
         else:
             while not done:
                 choice = randint(0,2)
+                choice = Move.to_enum(choice)
+                print("chose: {}".format(choice))
                 if self.can_choose_move(choice):
                     done = True
         return choice
