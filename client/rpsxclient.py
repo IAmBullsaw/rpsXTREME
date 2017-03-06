@@ -133,8 +133,9 @@ class RPSXClient:
         7. recv: turn outcome / match outcome
         
         """
-        while True:
-            ans = input('Want to play a match?')
+        done = False
+        while not done:
+            ans = input('\tWant to play a match?')
             if not ans in ['no','n','q','quit','exit']:
                 pl("I'll take that as a \"Yes please!\".")
                 pl("requesting game...")
@@ -148,6 +149,7 @@ class RPSXClient:
                 # Loop done, match over.
             else:
                 self.tear_down()
+                done = True
         
 
     def play_turn(self):
@@ -260,7 +262,7 @@ class RPSXClient:
             raise Exception("Server didn't respond with OK on connect")
         
 if __name__ == '__main__':
-    p = Player(input('Welcome!\nWhat is your name?: '))
+    p = Player(input('\tWelcome!\n\tWhat is your name?: '))
     cli = RPSXClient(host=socket.gethostname(),player = p)
     cli.setup()
     try:

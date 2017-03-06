@@ -209,6 +209,12 @@ class RPSXServer:
         else:
             pl('setting up bot match...')
             p2 = Player("Gunhilda",bot=True)
+
+            ## Whos responsibility is this?
+            # probably servers, right?
+            if not p.has_moves_left():
+                p.reset_moves()
+                
             match = RPSXGame(p, p2, Judge(), bot=True)
             self.send_cmd(cs,Command.OK)
             

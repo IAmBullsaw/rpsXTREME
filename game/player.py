@@ -72,11 +72,13 @@ class Player:
         if not self.bot:
             self.print_moves()
             while not done:
-                choice = input('What is your move?: ')
-                if choice in ['q','quit','exit']:
+                choice = input('\tWhat is your move?: ')
+                if not choice or choice == '':
+                    pass
+                elif choice in ['q','quit','exit']:
                     done = True
                     choice = None
-                if choice in '123':
+                elif choice in '123':
                     choice = int(choice)
                     choice -= 1 # minus one since choices do not begin with 0
                     choice = choice % 3
@@ -109,7 +111,7 @@ class Player:
         self.wins = int(self.wins)
 
     def print_moves(self):
-        print("1. {}\n2.{}\n3.{}".format(self.rocks,self.papers,self.scissors))
+        print("\tMake a choice!\n\t1. {}\n\t2. {}\n\t3. {}".format(self.rocks,self.papers,self.scissors))
 
     def __repr__(self):
         return "<player " + self.pack_to_string() +'>'
