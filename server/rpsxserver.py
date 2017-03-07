@@ -14,6 +14,8 @@ from rpsxtreme import RPSXGame
 from judge import Judge
 from player import Player
 from enums import Command, Move
+from serverstats import Serverstatistics
+from cmd_thread import Cmdthread
 
 debug = True
 
@@ -47,6 +49,7 @@ class RPSXServer:
         self.start_time = None
         self.total_players = 0
         self.turns_per_match = turns_per_match
+        self.stats = None
         
         ok = self.setup_server()
         if not ok:
@@ -60,7 +63,7 @@ class RPSXServer:
 
     def goodbye(self):
         message = "Goodbye for now..."
-        uptime = (timer() - self.start_time)/60
+        uptime = (self.stats.get_uptime())/60
         message2 = "Uptime: {} minutes".format(str(uptime))
         message3 = "Total players: {}".format(self.total_players)
 
@@ -91,6 +94,7 @@ class RPSXServer:
             return False
         self.server_socket.listen(self.connections)
         pl("listening to max {} connections".format(self.connections))
+        
         return True
 
     def close_connection(self,uid = None, cs = None):
@@ -140,8 +144,14 @@ class RPSXServer:
         return muid
     
     def run(self):
-        self.start_time = timer()
+        self.stats = Serverstatistics(timer())
+
+        # TODO: Get this thread in background, stat!
+        #t = Cmdthread(1,'cmdthread',self.stats)
+        #t.run()
         self.welcome()
+        
+        
         pl("waiting for connections...")
         done = False
         while not done:
