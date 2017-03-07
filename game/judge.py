@@ -31,6 +31,7 @@ class Judge:
         
     def on_start_of_turn(self,p1,p2):
         p1.gain_move([Move.PAPER,Move.ROCK,Move.SCISSORS][randint(0,2)])
+        p2.gain_move([Move.PAPER,Move.ROCK,Move.SCISSORS][randint(0,2)])
 
     def on_start_of_match(self,p1,p2):
         pass

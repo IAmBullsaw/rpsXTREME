@@ -14,5 +14,4 @@ class Cmdthread(threading.Thread):
             cmd = input("enter 'ss' for stats:\t")
             if cmd == 'ss':
                 self.stats.show_stats()
-                
-    
+                    

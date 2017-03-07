@@ -18,10 +18,7 @@ class Serverstatistics:
         self.tied_turns = 0
         self.timer_start = timer_start
 
-    def new_match(self):
-        self.matches += 1
-
-    def move_played(self, move):
+    def add_move(self, move):
         if move == Move.ROCK:
             self.rocks += 1
         elif move == Move.PAPER:
@@ -30,6 +27,18 @@ class Serverstatistics:
             self.scissors += 1
         else:
             pass
+
+    def add_tied_turn(self):
+        self.tied_turns += 1
+
+    def add_tied_match(self):
+        self.tied_matches += 1
+
+    def add_turn(self):
+        self.turns += 1
+
+    def add_match(self):
+        self.matches += 1
 
     def get_stats(self):
         return "{}|{}|{}|{}|{}".format(self.rocks,self.papers,self.scissors,self.ties,self.matches)

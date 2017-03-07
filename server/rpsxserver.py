@@ -35,7 +35,7 @@ def p(message,t=True):
 def pdot():
     if debug:
         print('.', end="")
-
+        
 class RPSXServer:
 
     def __init__(self,host,port = 4711, connections = 5, turns_per_match = 5):
@@ -54,7 +54,7 @@ class RPSXServer:
         ok = self.setup_server()
         if not ok:
             raise "Server not OK"
-
+        
     def welcome(self):
         message = "Welcome to the rpsXtreme server"
         pl("*"*(len(message) + 22))
@@ -79,6 +79,7 @@ class RPSXServer:
         l = int(l)
         pl("*" + " "*l + message3 + " "*l + "*")
         pl("*"*(length))
+        self.stats.show_stats()
         
     def setup_server(self):
         p("setting up server")
@@ -147,10 +148,10 @@ class RPSXServer:
         self.stats = Serverstatistics(timer())
 
         # TODO: Get this thread in background, stat!
+        
+        self.welcome()
         #t = Cmdthread(1,'cmdthread',self.stats)
         #t.run()
-        self.welcome()
-        
         
         pl("waiting for connections...")
         done = False
@@ -222,10 +223,14 @@ class RPSXServer:
 
             ## Whos responsibility is this?
             # probably servers, right?
+            # - think so, since it is the one serving the match and rules etc.
             if not p.has_moves_left():
                 p.reset_moves()
                 
             match = RPSXGame(p, p2, Judge(), bot=True)
+            # One more match
+            self.stats.add_match()
+            
             self.send_cmd(cs,Command.OK)
             
             pl('match set up')
@@ -306,6 +311,7 @@ class RPSXServer:
                 match.set_p1_move(p1_mov)
                 match.play()
 
+                self.stats.add_turn()
                 # moves_left = return
                 return True
             else:

@@ -39,7 +39,12 @@ class RPSXClient:
     def close(self):
         pl("Closing connection to {}:{}".format(self.host,self.port))
         self.sock.close()
-
+        
+    def tear_down(self):
+        self.close()
+        self.save_state()
+        self.goodbye()
+        
     def save_state(self):
         pass
 
@@ -56,11 +61,6 @@ class RPSXClient:
         pl("*"*l)
         pl("*"+" "*10+message+" "*10+"*")
         pl("*"*l)
-        
-    def tear_down(self):
-        self.close()
-        self.save_state()
-        self.goodbye()
 
     def connection_lost(self):
         pass
@@ -98,7 +98,6 @@ class RPSXClient:
         snapshot = self.recv_snapshot()
         self.send_cmd(ans_cmd)
         return snapshot
-    
 
     def cmd_transaction(self,send_cmd,ans_cmd = Command.OK):
         pl("Transaction: send {} recv{}".format(send_cmd,ans_cmd))
@@ -267,11 +266,10 @@ if __name__ == '__main__':
     cli.setup()
     try:
         cli.play()
-        
     except KeyboardInterrupt:
         pl("received interrupt")
         cli.tear_down()
     except:
-        pl("something bad happened")
+        pl("caught exception when cli.play()")
         cli.tear_down()
         raise
