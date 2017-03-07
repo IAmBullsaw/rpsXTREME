@@ -111,7 +111,7 @@ class Player:
         self.wins = int(self.wins)
 
     def print_moves(self):
-        print("\tMake a choice!\n\t1. {}\n\t2. {}\n\t3. {}".format(self.rocks,self.papers,self.scissors))
+        print("\n\tMake a choice!\n\t1. Rocks left: {}\n\t2. Papers left: {}\n\t3. Scissors left: {}".format(self.rocks,self.papers,self.scissors))
 
     def __repr__(self):
         return "<player " + self.pack_to_string() +'>'

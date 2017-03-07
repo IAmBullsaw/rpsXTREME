@@ -12,7 +12,7 @@ import socket
 from term_gfx import Graphics
 from player import Player
 from enums import Command, Move
-debug = True
+debug = False
 
 def pl(msg):
     if debug:
@@ -138,7 +138,6 @@ class RPSXClient:
             if not ans in ['no','n','q','quit','exit']:
                 pl("I'll take that as a \"Yes please!\".")
                 pl("requesting game...")
-                print(self.player.has_moves_left())
                 if not self.player.has_moves_left():
                     self.player.reset_moves()
                 
@@ -262,7 +261,7 @@ class RPSXClient:
         
 if __name__ == '__main__':
     p = Player(input('\tWelcome!\n\tWhat is your name?: '))
-    cli = RPSXClient(host=socket.gethostname(),player = p)
+    cli = RPSXClient(player = p)#host=socket.gethostname(),player = p)
     cli.setup()
     try:
         cli.play()
