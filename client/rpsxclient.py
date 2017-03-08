@@ -17,6 +17,9 @@ debug = False
 def pl(msg):
     if debug:
         print("\t" + msg)
+        
+def pls(msg):
+    print("\t" + msg)
 
 class RPSXClient:
     def __init__(self, player, host='155.4.151.254', port = 4711):
@@ -27,14 +30,19 @@ class RPSXClient:
         self.gfx = Graphics()
 
     def connect(self):
-        pl("connecting to {}:{}".format(self.host,self.port))
-        try:
-            self.sock.connect((self.host,self.port))
-        except:
-            pl("Couldn't establish connection")
-            raise Exception("Couldn't establish connection")
-        pl("connected")
-        self.welcome()
+        connected = False
+        for i in range(3):
+            print("\tConnecting to server... {}".format(3-i))
+            pl("connecting to {}:{}".format(self.host,self.port))
+            try:
+                self.sock.connect((self.host,self.port))
+                connected = True
+                pl("connected")
+                break
+            except:
+                pl("Couldn't establish connection: Trying again...")
+                sleep(1)
+        return connected
 
     def close(self):
         pl("Closing connection to {}:{}".format(self.host,self.port))
@@ -51,16 +59,16 @@ class RPSXClient:
     def welcome(self):
         message = "Welcome to rpsXtreme!"
         l = len(message)+22
-        pl("*"*l)
-        pl("*"+" "*10+message+" "*10+"*")
-        pl("*"*l)
+        pls("*"*l)
+        pls("*"+" "*10+message+" "*10+"*")
+        pls("*"*l)
     
     def goodbye(self):
         message = "Goodbye for now..."
         l = len(message)+22
-        pl("*"*l)
-        pl("*"+" "*10+message+" "*10+"*")
-        pl("*"*l)
+        pls("*"*l)
+        pls("*"+" "*10+message+" "*10+"*")
+        pls("*"*l)
 
     def connection_lost(self):
         pass
@@ -253,22 +261,30 @@ class RPSXClient:
             
     def setup(self):
         pl("setting up client...")
-        self.connect()
-        self.send_player(self.player)
-        cmd = self.recv_cmd()
-        if not cmd == Command.OK:
-            raise Exception("Server didn't respond with OK on connect")
-        
+        self.welcome()
+        connected = self.connect()
+        if connected:
+            self.send_player(self.player)
+            cmd = self.recv_cmd()
+            if not cmd == Command.OK:
+                raise Exception("Server didn't respond with OK on connect")
+        else:
+            self.goodbye()
+        return connected
+            
 if __name__ == '__main__':
     p = Player(input('\tWelcome!\n\tWhat is your name?: '))
-    cli = RPSXClient(player = p)#host=socket.gethostname(),player = p)
-    cli.setup()
-    try:
-        cli.play()
-    except KeyboardInterrupt:
-        pl("received interrupt")
-        cli.tear_down()
-    except:
-        pl("caught exception when cli.play()")
-        cli.tear_down()
-        raise
+    cli = RPSXClient(host=socket.gethostname(),player = p)
+    connected = cli.setup()
+    if connected:
+        try:
+            cli.play()
+        except KeyboardInterrupt:
+            pl("received interrupt")
+            cli.tear_down()
+        except:
+            pl("caught exception when cli.play()")
+            cli.tear_down()
+            raise
+    else:
+        print("\tCouldn't establish a connection... aborting")    
