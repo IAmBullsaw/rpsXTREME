@@ -37,7 +37,7 @@ class Graphics:
                                                                                    moves[2]))
     def show_player_won(self,player):
         pl(self.divider)
-        pl("The winner of the turn is: {}".format(player.get_name()))
+        pl("The winner of the match is: {}".format(player.get_name()))
         pl(self.divider)
 
     def show_draw(self):

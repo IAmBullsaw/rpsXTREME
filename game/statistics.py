@@ -52,20 +52,19 @@ class Statistics:
         return msg[:-1]
 
     def load_from_string(self,string):
-        print(string)
         l = string.split('2')
-        print(l)
         self.score = []
         if not l == '[]':
             for e in l:
                 if not e in '[]':
-                    self.score.append(int(e))
-                
+                    self.score.append(int(e))                
 
     def show_last_turn_winner(self):
         last = self.get_last_score()
-        padding = '\t'
-        if last:
+        padding = '\t\t'
+        before = '\tResult:'
+        if not last == None:
+            print(before)
             if last == 0:
                 print(padding + "It was a tie.")
             elif last > 0:
@@ -78,3 +77,6 @@ class Statistics:
         if len(self.score) > 0:
             last = self.score[-1]
         return last
+
+    def __repr__(self):
+        return "<Statistics {}".format(str(self.score))
