@@ -45,12 +45,16 @@ class Statistics:
                                                                     (self.p2).get_points() ))
 
     def pack_to_string(self):
-        msg = [str(p)+'2' for p in self.score]
-        return "{}".format(msg[0:-1])
+        msg = ''
+        for s in self.score:
+            msg += str(s)+'2'
+        
+        return msg[:-1]
 
     def load_from_string(self,string):
+        print(string)
         l = string.split('2')
-
+        print(l)
         self.score = []
         if not l == '[]':
             for e in l:
